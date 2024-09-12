@@ -1,4 +1,12 @@
-describe Prueba do
+require_relative 'spec_helper'
+
+class Prueba
+  def materia
+    :tadp
+  end
+end
+
+describe 'Prueba' do
   let(:prueba) { Prueba.new }
 
   describe '#materia' do
