@@ -25,4 +25,27 @@ module Aserciones
       Condicion.new(Proc.new { |objeto| valores.first.include?(objeto) })
     end
   end
+
+  def respond_to_missing?(symbol)
+    symbol.to_s.start_with?('ser_') || super
+  end
+
+  def method_missing(symbol, *args, &block)
+    unless respond_to_missing? symbol
+      super
+    end
+
+    if symbol.to_s.start_with?('ser_')
+      obtener_condicion_ser(symbol, *args, block)
+    end
+  end
+
+  private
+
+  def obtener_condicion_ser(symbol, *args, block)
+    metodo = "#{symbol.to_s.delete_prefix("ser_")}?".to_sym
+    Condicion.new(Proc.new {
+      |obj| obj.respond_to?(metodo) && obj.send(metodo, *args, &block)
+    })
+  end
 end
