@@ -36,16 +36,16 @@ module Aserciones
     end
 
     if symbol.to_s.start_with?('ser_')
-      obtener_condicion_ser(symbol, *args, block)
+      obtener_condicion_ser(symbol)
     end
   end
 
   private
 
-  def obtener_condicion_ser(symbol, *args, block)
-    metodo = "#{symbol.to_s.delete_prefix("ser_")}?".to_sym
+  def obtener_condicion_ser(symbol)
+    metodo = "#{symbol.to_s.delete_prefix('ser_')}?".to_sym
     Condicion.new(Proc.new {
-      |obj| obj.respond_to?(metodo) && obj.send(metodo, *args, &block)
+      |obj| obj.respond_to?(metodo) && obj.send(metodo)
     })
   end
 end

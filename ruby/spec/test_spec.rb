@@ -32,5 +32,10 @@ describe 'TADsPec' do
       "hola".deberia ser uno_de_estos 7, 22, "hola"
     end
 
+    it 'Persona es adulto' do
+      Persona.new(30).deberia ser_adulto
+      Persona.new(30).adulto?.deberia ser true
+    end
+
   end
 end
