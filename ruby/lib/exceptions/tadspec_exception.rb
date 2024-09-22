@@ -1,0 +1,2 @@
+class TadspecException < StandardError
+end
