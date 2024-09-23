@@ -37,5 +37,13 @@ describe 'TADsPec' do
       Persona.new(30).adulto?.deberia ser true
     end
 
+    it 'Persona tiene 30' do
+      Persona.new(30).deberia tener_edad 30
+      Persona.new(30).deberia tener_nombre nil
+      Persona.new(30).deberia tener_edad mayor_a 20
+      Persona.new(30).deberia tener_edad menor_a 40
+      Persona.new(30).deberia tener_edad uno_de_estos [7, 30, "hola"]
+    end
+
   end
 end
