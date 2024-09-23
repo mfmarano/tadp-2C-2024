@@ -45,5 +45,10 @@ describe 'TADsPec' do
       Persona.new(30).deberia tener_edad uno_de_estos [7, 30, "hola"]
     end
 
+    it 'Persona entiende' do
+      Persona.new(30).deberia entender :adulto?
+      Persona.new(30).deberia entender :class
+    end
+
   end
 end
