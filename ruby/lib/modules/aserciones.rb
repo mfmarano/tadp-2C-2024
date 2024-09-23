@@ -27,7 +27,7 @@ module Aserciones
   end
 
   def respond_to_missing?(symbol)
-    symbol.to_s.start_with?('ser_') || super
+    symbol.to_s.start_with?('ser_') || symbol.to_s.start_with?('tener_') || super
   end
 
   def method_missing(symbol, *args, &block)
@@ -36,7 +36,11 @@ module Aserciones
     end
 
     if symbol.to_s.start_with?('ser_')
-      obtener_condicion_ser(symbol)
+      return obtener_condicion_ser(symbol)
+    end
+
+    if symbol.to_s.start_with?('tener_')
+      obtener_condicion_tener(symbol, *args)
     end
   end
 
@@ -46,6 +50,13 @@ module Aserciones
     metodo = "#{symbol.to_s.delete_prefix('ser_')}?".to_sym
     Condicion.new(Proc.new {
       |obj| obj.respond_to?(metodo) && obj.send(metodo)
+    })
+  end
+
+  def obtener_condicion_tener(symbol, *args)
+    atributo = "@#{symbol.to_s.delete_prefix('tener_')}".to_sym
+    Condicion.new(Proc.new {
+      |obj| ser(args[0]).verificar(obj.instance_variable_get(atributo))
     })
   end
 end
