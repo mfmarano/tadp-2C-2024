@@ -26,6 +26,10 @@ module Aserciones
     end
   end
 
+  def entender(symbol)
+    Condicion.new(Proc.new { |objeto| objeto.respond_to? symbol })
+  end
+
   def respond_to_missing?(symbol)
     symbol.to_s.start_with?('ser_') || symbol.to_s.start_with?('tener_') || super
   end
