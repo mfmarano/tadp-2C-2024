@@ -50,5 +50,11 @@ describe 'TADsPec' do
       Persona.new(30).deberia entender :class
     end
 
+    it 'Explota' do
+      Proc.new{ 7 / 0 }.deberia explotar_con ZeroDivisionError
+      Proc.new{ Persona.new(30).nombre }.deberia explotar_con NoMethodError
+      Proc.new{ Persona.new(30).nombre }.deberia explotar_con StandardError
+    end
+
   end
 end
