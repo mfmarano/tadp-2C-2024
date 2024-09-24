@@ -30,6 +30,17 @@ module Aserciones
     Condicion.new(Proc.new { |objeto| objeto.respond_to? symbol })
   end
 
+  def explotar_con(excepcion)
+    Condicion.new(Proc.new { |objeto|
+      begin
+        objeto.call
+        false
+      rescue excepcion
+        true
+      end
+    })
+  end
+
   def respond_to_missing?(symbol)
     symbol.to_s.start_with?('ser_') || symbol.to_s.start_with?('tener_') || super
   end
