@@ -30,6 +30,10 @@ module Aserciones
     Condicion.new(Proc.new { |objeto| objeto.respond_to? symbol })
   end
 
+  def en(&proc)
+    proc
+  end
+
   def explotar_con(excepcion)
     Condicion.new(Proc.new { |objeto|
       begin
