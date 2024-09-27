@@ -5,7 +5,6 @@ require_relative '../classes/object'
 require_relative '../exceptions/tadspec_exception'
 
 
-
 module TADsPec
   def self.testear(suite_class = nil, *tests)
     if suite_class.nil?
@@ -44,13 +43,14 @@ module TADsPec
   end
 
   def self.ejecutar_test(suite_instance, method)
-    #puts "Ejecutando #{method}..."
-    suite_instance.instance_eval do
-      suite_instance.send(method)
-    end
-    puts "#{method} PASS"
-    rescue => e
-      puts "Error al ejecutar el test #{method}: #{e.message}"
+      suite_instance.instance_eval do
+        suite_instance.send(method)
+      end
+      puts "#{method} PASS"
+    rescue TadspecException => e
+      puts "#{method} FAIL: #{e.message}"
+    rescue StandardError => e
+      puts "#{method} ERROR: #{e.message}"
   end
 
   def self.suites
