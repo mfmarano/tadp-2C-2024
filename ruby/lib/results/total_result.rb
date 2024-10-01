@@ -38,8 +38,6 @@ class TotalResult
     result += "Tests pasados: #{tests_pasados}\n"
     result += "Tests fallados: #{tests_fallidos}\n"
     result += "Tests explotados: #{tests_explotados}\n"
-    result += "#{separador}\n"
-
-    result
+    result + "#{separador}\n"
   end
 end

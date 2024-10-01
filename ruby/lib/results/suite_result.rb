@@ -45,7 +45,6 @@ class SuiteResult
       end
     end
 
-    result += "#{separador}\n"
-    result
+    result + "#{separador}\n"
   end
 end
