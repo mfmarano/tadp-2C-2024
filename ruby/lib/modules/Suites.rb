@@ -9,13 +9,15 @@ require_relative '../results/test_result'
 
 module TADsPec
   def self.testear(suite_class = nil, *tests)
+    total_results = nil
     if suite_class.nil?
-      testear_todas_las_suites
+      total_results = testear_todas_las_suites
     elsif tests.empty?
-      testear_todos_los_tests_de_suite(suite_class)
+      total_results = testear_todos_los_tests_de_suite(suite_class)
     else
-      testear_tests_especificos(suite_class, tests)
+      total_results =testear_tests_especificos(suite_class, tests)
     end
+    puts total_results
   end
 
   def self.testear_todas_las_suites
@@ -24,42 +26,54 @@ module TADsPec
       suite_result = testear_todos_los_tests_de_suite(suite)
       total_result.add_suite_result(suite_result)
     end
-    puts total_result
+    total_result
   end
 
   def self.testear_todos_los_tests_de_suite(suite_class)
     suite_instance = suite_class.new
+    total_result = TotalResult.new
     test_methods = obtener_metodos_de_test(suite_class)
     suite_result = SuiteResult.new(suite_class.name)
     test_methods.each do |method|
       result = ejecutar_test(suite_instance, method)
       suite_result.add_result(result)
     end
-    suite_result
+    total_result.add_suite_result(suite_result)
+
+    total_result
   end
 
   def self.testear_tests_especificos(suite_class, tests)
     suite_instance = suite_class.new
     test_methods = tests.map { |test| "testear_que_#{test}".to_sym }
+    total_result = TotalResult.new
+    suite_result = SuiteResult.new(suite_class.name)
     test_methods.each do |method|
       if suite_class.instance_methods.include?(method)
-        ejecutar_test(suite_instance, method)
+        result = ejecutar_test(suite_instance, method)
+        suite_result.add_result(result)
       else
         puts "Test #{method} no encontrado en la suite #{suite_class}"
       end
     end
+    total_result.add_suite_result(suite_result)
+    total_result
   end
 
   def self.ejecutar_test(suite_instance, method)
     begin
       suite_instance.instance_eval do
         suite_instance.send(method)
-      end
-      TestResult.new(method, :pasado)
+        end
+      puts "pasado #{method}"
+      return TestResult.new(method, :pasado)
     rescue TadspecException => e
-      TestResult.new(method, :failed, e.message)
+      puts "fallado #{method}"
+      return TestResult.new(method, :fallido, e.message)
     rescue StandardError => e
-      TestResult.new(method, :exploded, "#{e.class}: #{e.message}\n#{e.backtrace.join("\n")}")
+      puts "explotado #{method}"
+      return TestResult.new(method, :exploto, "#{e.class}: #{e.message}\n#{e.backtrace.join("\n")}")
+
     end
   end
 
