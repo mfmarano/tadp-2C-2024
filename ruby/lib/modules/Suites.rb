@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 # El módulo principal del framework
 require_relative './aserciones'
-require_relative '../classes/object'
+# require_relative '../classes/object'
+require_relative 'extension_deberia'
 require_relative '../exceptions/tadspec_exception'
 require_relative '../results/total_result'
 require_relative '../results/suite_result'
@@ -63,6 +64,7 @@ module TADsPec
   def self.ejecutar_test(suite_instance, method)
     begin
       suite_instance.instance_eval do
+        Object.include ExtensionDeberia
         suite_instance.send(method)
         end
       puts "pasado #{method}"
@@ -83,9 +85,6 @@ module TADsPec
     end
     clases.each do |klass|
       klass.include(Aserciones)
-      #klass.class_eval do
-      #  using Method_deberia
-      #end
     end
 
     clases

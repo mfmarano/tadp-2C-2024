@@ -31,6 +31,10 @@ class OtraSuiteDeTests
   def testear_que_test_explota
     1.metodo_que_no_existe
   end
+
+  def no_funciona_deberia
+    2.deberia ser 1
+  end
 end
 
 TADsPec.testear
