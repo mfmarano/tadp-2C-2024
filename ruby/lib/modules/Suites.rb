@@ -7,12 +7,13 @@ require_relative '../results/test_result'
 
 module TADsPec
   def self.testear(suite_class = nil, *tests)
+    total_results = TotalResult.new
     if suite_class.nil?
       total_results = testear_todas_las_suites
     elsif tests.empty?
-      total_results = testear_todos_los_tests_de_suite(suite_class)
+      total_results.add_suite_result(testear_todos_los_tests_de_suite(suite_class))
     else
-      total_results = testear_tests_especificos(suite_class, tests)
+      total_results.add_suite_result(testear_tests_especificos(suite_class, tests))
     end
     puts total_results
   end
@@ -37,7 +38,6 @@ module TADsPec
   def self.testear_tests_especificos(suite_class, tests)
     suite_instance = suite_class.new
     test_methods = tests.map { |test| "testear_que_#{test}".to_sym }
-    total_result = TotalResult.new
     suite_result = SuiteResult.new(suite_class.name)
     test_methods.each do |method|
       if suite_class.instance_methods.include?(method)
@@ -47,8 +47,7 @@ module TADsPec
         puts "Test #{method} no encontrado en la suite #{suite_class}"
       end
     end
-    total_result.add_suite_result(suite_result)
-    total_result
+    suite_result
   end
 
   def self.ejecutar_test(suite_instance, method)
