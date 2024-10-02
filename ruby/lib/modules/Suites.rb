@@ -52,6 +52,7 @@ module TADsPec
   end
 
   def self.ejecutar_test(suite_instance, method)
+    suite_instance.class.include(Aserciones)
     begin
       suite_instance.instance_eval do
         Object.include ExtensionDeberia
@@ -68,9 +69,6 @@ module TADsPec
   def self.suites
     clases = ObjectSpace.each_object(Class).select do |klass|
       !obtener_metodos_de_test(klass).empty?
-    end
-    clases.each do |klass|
-      klass.include(Aserciones)
     end
 
     clases
