@@ -1,5 +1,7 @@
 class TestResult
 
+  attr_reader :status
+
   def initialize(name, status, message = nil)
     @name = name
     @status = status

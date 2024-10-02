@@ -34,15 +34,12 @@ class SuiteResult
     result += "Tests fallados: #{tests_fallidos}\n"
     result += "Tests explotados: #{tests_explotados}\n"
 
-    [:pasado, :fallido, :exploto].each do |status|
-      tests = @test_results.select { |t| t.send("#{status}?") }
-      if tests.any?
-        result += "\n#{separador}\n"
-        result += "Tests #{status}:\n"
-        result += "#{separador}\n"
-        result += tests.map(&:to_s).join("\n")
-        result += "\n"
-      end
+    @test_results.group_by(&:status).each do |status, tests|
+      result += "\n#{separador}\n"
+      result += "Tests #{status}:\n"
+      result += "#{separador}\n"
+      result += tests.map(&:to_s).join("\n")
+      result += "\n"
     end
 
     result + "#{separador}\n"
