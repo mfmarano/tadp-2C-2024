@@ -29,17 +29,9 @@ module TADsPec
   end
 
   def self.testear_todos_los_tests_de_suite(suite_class)
-    suite_instance = suite_class.new
-    total_result = TotalResult.new
     test_methods = obtener_metodos_de_test(suite_class)
-    suite_result = SuiteResult.new(suite_class.name)
-    test_methods.each do |method|
-      result = ejecutar_test(suite_instance, method)
-      suite_result.add_result(result)
-    end
-    total_result.add_suite_result(suite_result)
-
-    total_result
+    test_methodsSinPrefix = test_methods.map { |method| method.to_s.delete_prefix('testear_que_') }
+    return testear_tests_especificos(suite_class, test_methodsSinPrefix)
   end
 
   def self.testear_tests_especificos(suite_class, tests)

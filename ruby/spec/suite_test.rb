@@ -37,4 +37,5 @@ class OtraSuiteDeTests
   end
 end
 
-TADsPec.testear
+# TADsPec.testear
+TADsPec.testear(OtraSuiteDeTests)
