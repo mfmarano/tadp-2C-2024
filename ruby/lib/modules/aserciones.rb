@@ -7,27 +7,27 @@ module Aserciones
   end
 
   def igual(valor)
-    Condicion.new(Proc.new { |objeto| objeto == valor })
+    Condicion.new { |objeto| objeto == valor }
   end
 
   def mayor_a(valor)
-    Condicion.new(Proc.new { |objeto| objeto > valor })
+    Condicion.new { |objeto| objeto > valor }
   end
 
   def menor_a(valor)
-    Condicion.new(Proc.new { |objeto| objeto < valor })
+    Condicion.new { |objeto| objeto < valor }
   end
 
   def uno_de_estos(*valores)
     if valores.length > 1
-      Condicion.new(Proc.new { |objeto| valores.include?(objeto) })
+      Condicion.new { |objeto| valores.include?(objeto) }
     else
-      Condicion.new(Proc.new { |objeto| valores.first.include?(objeto) })
+      Condicion.new { |objeto| valores.first.include?(objeto) }
     end
   end
 
   def entender(symbol)
-    Condicion.new(Proc.new { |objeto| objeto.respond_to? symbol })
+    Condicion.new { |objeto| objeto.respond_to? symbol }
   end
 
   def en(&proc)
@@ -35,14 +35,14 @@ module Aserciones
   end
 
   def explotar_con(excepcion)
-    Condicion.new(Proc.new { |objeto|
+    Condicion.new { |objeto|
       begin
         objeto.call
         false
       rescue excepcion
         true
       end
-    })
+    }
   end
 
   def respond_to_missing?(symbol)
@@ -67,15 +67,11 @@ module Aserciones
 
   def obtener_condicion_ser(symbol)
     metodo = "#{symbol.to_s.delete_prefix('ser_')}?".to_sym
-    Condicion.new(Proc.new {
-      |obj| obj.respond_to?(metodo) && obj.send(metodo)
-    })
+    Condicion.new { |obj| obj.respond_to?(metodo) && obj.send(metodo) }
   end
 
   def obtener_condicion_tener(symbol, *args)
     atributo = "@#{symbol.to_s.delete_prefix('tener_')}".to_sym
-    Condicion.new(Proc.new {
-      |obj| ser(args[0]).verificar(obj.instance_variable_get(atributo))
-    })
+    Condicion.new { |obj| ser(args[0]).verificar(obj.instance_variable_get(atributo)) }
   end
 end

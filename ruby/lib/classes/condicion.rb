@@ -1,5 +1,5 @@
 class Condicion
-  def initialize(proposicion)
+  def initialize(&proposicion)
     @proposicion = proposicion
   end
 
