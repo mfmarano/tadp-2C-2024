@@ -22,7 +22,7 @@ module TADsPec
 
   def self.testear_todas_las_suites
     total_result = TotalResult.new
-    suites.each do |suite|
+    obtener_todas_las_suites.each do |suite|
       suite_result = testear_todos_los_tests_de_suite(suite)
       total_result.add_suite_result(suite_result)
     end
@@ -30,15 +30,13 @@ module TADsPec
   end
 
   def self.testear_todos_los_tests_de_suite(suite_class)
-    test_methods = obtener_metodos_de_test(suite_class)
-    test_methodsSinPrefix = test_methods.map { |method| method.to_s.delete_prefix('testear_que_') }
-    return testear_tests_especificos(suite_class, test_methodsSinPrefix)
+    testear_tests_especificos(suite_class, obtener_metodos_de_test(suite_class))
   end
 
   def self.testear_tests_especificos(suite_class, tests)
     suite_instance = suite_class.new
-    test_methods = tests.map { |test| "testear_que_#{test}".to_sym }
     suite_result = SuiteResult.new(suite_class.name)
+    test_methods = tests.map { |test| test.start_with?('testear_que_') ? test.to_sym : "testear_que_#{test}".to_sym }
     test_methods.each do |method|
       if suite_class.instance_methods.include?(method)
         result = ejecutar_test(suite_instance, method)
@@ -65,7 +63,7 @@ module TADsPec
     end
   end
 
-  def self.suites
+  def self.obtener_todas_las_suites
     clases = ObjectSpace.each_object(Class).select do |klass|
       !obtener_metodos_de_test(klass).empty?
     end
