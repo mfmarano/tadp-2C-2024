@@ -1,4 +1,4 @@
-require_relative '../lib/modules/Suites'
+require_relative '../lib/modules/tadspec'
 require_relative 'persona'
 
 class MiSuiteDeTests

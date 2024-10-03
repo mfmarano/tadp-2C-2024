@@ -1,5 +1,5 @@
 require_relative './aserciones'
-require_relative 'extension_deberia'
+require_relative 'deberia'
 require_relative '../exceptions/tadspec_exception'
 require_relative '../classes/results/total_result'
 require_relative '../classes/results/suite_result'
@@ -45,7 +45,7 @@ module TADsPec
     suite_instance.class.include(Aserciones)
     begin
       suite_instance.instance_eval {
-        Object.include ExtensionDeberia
+        Object.include Deberia
         suite_instance.send(method)
       }
       return TestResult.new(method, :pasado)

@@ -1,6 +1,6 @@
 require_relative 'spec_helper'
 
-Object.include ExtensionDeberia
+Object.include Deberia
 describe 'TADsPec' do
 
   describe 'Aserciones' do
