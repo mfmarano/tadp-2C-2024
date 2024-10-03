@@ -1,5 +1,5 @@
 module ExtensionDeberia
-  def deberia(asercion)
-    raise TadspecException.new("Test fallido") unless asercion.verificar(self)
+  def deberia(condicion)
+    condicion.verificar(self)
   end
 end

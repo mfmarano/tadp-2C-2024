@@ -25,9 +25,9 @@ class TestResult
     when :pasado
       "  #{@name} PASS"
     when :fallido
-      "  #{@name}: #{@message} FAIL"
+      "  #{@name}: FAIL (#{@message})"
     when :exploto
-      "  #{@name}:\n    #{@message}"
+      "  #{@name}: #{@message}"
     end
   end
 end
