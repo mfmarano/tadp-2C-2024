@@ -1,9 +1,9 @@
 require_relative './aserciones'
 require_relative 'extension_deberia'
 require_relative '../exceptions/tadspec_exception'
-require_relative '../results/total_result'
-require_relative '../results/suite_result'
-require_relative '../results/test_result'
+require_relative '../classes/results/total_result'
+require_relative '../classes/results/suite_result'
+require_relative '../classes/results/test_result'
 
 module TADsPec
   def self.testear(suite_class = nil, *tests)
