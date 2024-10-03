@@ -21,12 +21,9 @@ module TADsPec
   private
 
   def self.testear_todas_las_suites
-    total_result = TotalResult.new
-    obtener_todas_las_suites.each do |suite|
-      suite_result = testear_todos_los_tests_de_suite(suite)
-      total_result.add_suite_result(suite_result)
-    end
-    total_result
+    obtener_todas_las_suites.each_with_object(TotalResult.new) { |suite, total_result|
+      total_result.add_suite_result(testear_todos_los_tests_de_suite(suite))
+    }
   end
 
   def self.testear_todos_los_tests_de_suite(suite_class)
@@ -34,27 +31,23 @@ module TADsPec
   end
 
   def self.testear_tests_especificos(suite_class, tests)
-    suite_instance = suite_class.new
     suite_result = SuiteResult.new(suite_class.name)
-    test_methods = tests.map { |test| test.start_with?('testear_que_') ? test.to_sym : "testear_que_#{test}".to_sym }
-    test_methods.each do |method|
-      if suite_class.instance_methods.include?(method)
-        result = ejecutar_test(suite_instance, method)
-        suite_result.add_result(result)
-      else
-        puts "Test #{method} no encontrado en la suite #{suite_class}"
-      end
-    end
+    tests.map { |test| test.start_with?('testear_que_') ? test.to_sym : "testear_que_#{test}".to_sym }
+         .each_with_object(suite_class.new) { |method, suite_instance| suite_result.add_result(ejecutar_test(suite_instance, method)) }
     suite_result
   end
 
   def self.ejecutar_test(suite_instance, method)
+    unless suite_instance.methods.include?(method)
+      return TestResult.new(method, :exploto, "Test #{method} no encontrado en la suite #{suite_instance.class}")
+    end
+
     suite_instance.class.include(Aserciones)
     begin
-      suite_instance.instance_eval do
+      suite_instance.instance_eval {
         Object.include ExtensionDeberia
         suite_instance.send(method)
-      end
+      }
       return TestResult.new(method, :pasado)
     rescue TadspecException => e
       return TestResult.new(method, :fallido, e.message)
@@ -64,15 +57,13 @@ module TADsPec
   end
 
   def self.obtener_todas_las_suites
-    clases = ObjectSpace.each_object(Class).select do |klass|
-      !obtener_metodos_de_test(klass).empty?
-    end
-
-    clases
+    ObjectSpace.each_object(Class)
+               .select { |klass| !obtener_metodos_de_test(klass).empty? }
   end
 
   def self.obtener_metodos_de_test(klass)
-    klass.instance_methods.select { |method| method.to_s.start_with?('testear_que_') }
+    klass.instance_methods
+         .select { |method| method.to_s.start_with?('testear_que_') }
   end
 
 end

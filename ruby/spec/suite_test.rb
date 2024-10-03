@@ -7,15 +7,15 @@ class MiSuiteDeTests
   end
 
   def testear_que_funciona_explotar
-    en { 7/ 0}.deberia explotar_con ZeroDivisionError
+    en { 7 / 0 }.deberia explotar_con ZeroDivisionError
   end
 
   def testear_que_no_funciona_explotar
-    en { 7/ 1}.deberia explotar_con ZeroDivisionError
+    en { 7 / 1 }.deberia explotar_con ZeroDivisionError
   end
 
   def metodo_que_no_es_un_test
-    en { 7/ 0}.deberia explotar_con ZeroDivisionError
+    en { 7 / 0 }.deberia explotar_con ZeroDivisionError
   end
 end
 
@@ -29,7 +29,7 @@ class OtraSuiteDeTests
   end
 
   def testear_que_funciona_explotar
-    en { 7/ 0}.deberia explotar_con ZeroDivisionError
+    en { 7 / 0 }.deberia explotar_con ZeroDivisionError
   end
 
   def testear_que_test_explota
@@ -50,6 +50,6 @@ class OtraSuiteDeTests
 
 end
 
-#TADsPec.testear
-#TADsPec.testear(OtraSuiteDeTests)
-#TADsPec.testear(OtraSuiteDeTests, :testear_que_falla)
+# TADsPec.testear
+# TADsPec.testear(OtraSuiteDeTests)
+# TADsPec.testear(OtraSuiteDeTests, :pasa, :falla)
