@@ -50,6 +50,20 @@ class OtraSuiteDeTests
 
 end
 
+class SuiteMocks
+  def testear_que_hay_mock
+    Persona.mockear(:saludar) { "Mock" }
+    persona = Persona.new(20)
+    persona.saludar.deberia ser "Mock"
+  end
+
+  def testear_que_no_hay_mock
+    persona = Persona.new(20)
+    persona.saludar.deberia ser "Hola humano"
+  end
+end
+
 # TADsPec.testear
 # TADsPec.testear(OtraSuiteDeTests)
 # TADsPec.testear(OtraSuiteDeTests, :pasa, :falla)
+# TADsPec.testear(SuiteMocks, :hay_mock, :no_hay_mock)

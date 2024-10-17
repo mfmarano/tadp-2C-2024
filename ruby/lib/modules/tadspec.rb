@@ -1,5 +1,6 @@
 require_relative './aserciones'
 require_relative 'deberia'
+require_relative 'mockear'
 require_relative '../exceptions/tadspec_exception'
 require_relative '../classes/results/total_result'
 require_relative '../classes/results/suite_result'
@@ -46,6 +47,7 @@ module TADsPec
     begin
       suite_instance.instance_eval {
         Object.include Deberia
+        Module.include Mockear
         suite_instance.send(method)
       }
       return TestResult.new(method, :pasado)

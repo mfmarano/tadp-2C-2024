@@ -6,4 +6,8 @@ class Persona
   def adulto?
     @edad > 17
   end
+
+  def saludar
+    "Hola humano"
+  end
 end
