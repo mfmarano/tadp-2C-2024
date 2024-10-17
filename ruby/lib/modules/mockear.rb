@@ -1,27 +1,30 @@
+require_relative '../classes/metodo_original'
+
 module Mockear
-  # WIP
+  def mockear(metodo, &comportamiento)
+    Mockeador.guardar_metodo_original(self, metodo, &comportamiento)
+  end
 end
 
-# module Mockear
-#   def mockear(metodo, &bloque)
-#     self.define_singleton_method(metodo, &bloque)
-#   end
-# end
+module Mockeador
 
-# module Mockear
-#
-#   attr_accessor :metodos_originales
-#
-#   def mockear(method, &block)
-#     @metodos_originales ||= {}
-#     @metodos_originales[method] = self.instance_method(method)
-#     self.define_method(method) do
-#       block.call
-#     end
-#   end
-#
-#   def desmockear(method)
-#     puts @metodos_originales
-#     self.define_method(method, @metodos_originales[method])
-#   end
-# end
+  attr_accessor :metodos_originales
+
+  def self.guardar_metodo_original(clase, simbolo, &comportamiento)
+    metodos_originales ||= []
+    metodos_originales << MetodoOriginal.new(clase, simbolo, clase.instance_method(simbolo))
+
+    clase.define_method simbolo, comportamiento
+  end
+
+  def self.restaurar_metodos_originales
+    metodos_originales.each do |metodo|
+      metodo.clase.define_method(metodo.simbolo, metodo.comportamiento)
+    end
+  end
+
+  def self.metodos_originales
+    @metodos_originales ||= []
+  end
+
+end

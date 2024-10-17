@@ -34,7 +34,10 @@ module TADsPec
   def self.testear_tests_especificos(suite_class, tests)
     suite_result = SuiteResult.new(suite_class.name)
     tests.map { |test| test.start_with?('testear_que_') ? test.to_sym : "testear_que_#{test}".to_sym }
-         .each_with_object(suite_class.new) { |method, suite_instance| suite_result.add_result(ejecutar_test(suite_instance, method)) }
+         .each_with_object(suite_class.new) { |method, suite_instance|
+            suite_result.add_result(ejecutar_test(suite_instance, method))
+            Mockeador.restaurar_metodos_originales
+        }
     suite_result
   end
 
