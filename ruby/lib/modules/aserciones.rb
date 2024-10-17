@@ -7,27 +7,33 @@ module Aserciones
   end
 
   def igual(valor)
-    Condicion.new { |objeto| raise TadspecException.new("Esperaba #{valor}, encontré #{objeto}") unless objeto == valor }
+    mensaje = proc { |objeto| "Esperaba #{valor}, encontré #{objeto}" }
+    Condicion.crear_condicion(mensaje) { |objeto| objeto == valor }
   end
 
   def mayor_a(valor)
-    Condicion.new { |objeto| raise TadspecException.new("Esperaba que #{valor} fuese mayor que #{objeto}") unless objeto > valor }
+    mensaje = proc { |objeto| "Esperaba que #{valor} fuese mayor que #{objeto}" }
+    Condicion.crear_condicion(mensaje) { |objeto| objeto > valor }
   end
 
   def menor_a(valor)
-    Condicion.new { |objeto| raise TadspecException.new("Esperaba que #{valor} fuese menor que #{objeto}") unless objeto < valor }
+    mensaje = proc { |objeto| "Esperaba que #{valor} fuese menor que #{objeto}" }
+    Condicion.crear_condicion(mensaje) { |objeto| objeto < valor }
   end
 
   def uno_de_estos(*valores)
     if valores.length > 1
-      Condicion.new { |objeto| raise TadspecException.new("Esperaba que #{objeto} fuese uno de #{valores}") unless valores.include?(objeto) }
+      mensaje = proc { |objeto| "Esperaba que #{objeto} fuese uno de #{valores}" }
+      Condicion.crear_condicion(mensaje) { |objeto| valores.include?(objeto) }
     else
-      Condicion.new { |objeto| raise TadspecException.new("Esperaba que #{objeto} fuese uno de #{valores}") unless valores.first.include?(objeto) }
+      mensaje = proc { |objeto| "Esperaba que #{objeto} fuese uno de #{valores}" }
+      Condicion.crear_condicion(mensaje) { |objeto| valores.first.include?(objeto) }
     end
   end
 
   def entender(symbol)
-    Condicion.new { |objeto| raise TadspecException.new("Esperaba que #{objeto} entienda #{symbol}") unless objeto.respond_to? symbol }
+    mensaje = proc { |objeto| "Esperaba que #{objeto} entienda #{symbol}" }
+    Condicion.crear_condicion(mensaje) { |objeto| objeto.respond_to? symbol }
   end
 
   def en(&proc)
@@ -35,10 +41,11 @@ module Aserciones
   end
 
   def explotar_con(excepcion)
-    Condicion.new { |objeto|
+    mensaje = proc { "Esperaba que explote con #{excepcion}" }
+    Condicion.crear_condicion(mensaje) { |objeto|
       begin
         objeto.call
-        raise TadspecException.new("Esperaba que explote con #{excepcion}")
+        false
       rescue excepcion
         true
       end
@@ -67,11 +74,12 @@ module Aserciones
 
   def obtener_condicion_ser(symbol)
     metodo = "#{symbol.to_s.delete_prefix('ser_')}?".to_sym
-    Condicion.new { |obj| raise TadspecException.new("Esperaba que #{obj} sea #{symbol}") unless obj.send(metodo) }
+    mensaje = proc { |objeto| "Esperaba que #{objeto} sea #{symbol}"}
+    Condicion.crear_condicion(mensaje) { |objeto| objeto.send(metodo) }
   end
 
   def obtener_condicion_tener(symbol, *args)
     atributo = "@#{symbol.to_s.delete_prefix('tener_')}".to_sym
-    Condicion.new { |obj| ser(args[0]).verificar(obj.instance_variable_get(atributo)) }
+    Condicion.new { |objeto| ser(args[0]).verificar(objeto.instance_variable_get(atributo)) }
   end
 end
