@@ -11,5 +11,6 @@ class Condicion
 
   def verificar(objeto)
     raise TadspecException.new(@mensaje.call(objeto)) unless @proposicion.call(objeto)
+    true
   end
 end

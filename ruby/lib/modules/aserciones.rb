@@ -80,7 +80,6 @@ module Aserciones
 
   def obtener_condicion_tener(symbol, *args)
     atributo = "@#{symbol.to_s.delete_prefix('tener_')}".to_sym
-    mensaje = proc { |objeto| "Esperaba que #{atributo} de #{objeto} sea #{args[0]}, encontré #{objeto.instance_variable_get(atributo)}" }
-    Condicion.crear_condicion(mensaje) { |objeto| ser(args[0]).verificar(objeto.instance_variable_get(atributo)) }
+    Condicion.new { |objeto| ser(args[0]).verificar(objeto.instance_variable_get(atributo)) }
   end
 end
