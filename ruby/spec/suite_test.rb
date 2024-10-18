@@ -69,12 +69,14 @@ class SuiteEspias
     persona = Persona.new(20)
     persona = espiar(persona)
 
-    persona.saludar
     persona.adulto?
+    persona.deberia haber_recibido(:adulto?)
+    persona.deberia haber_recibido(:edad)
+  end
 
-    puts persona.llamadas
-
-    # WIP
+  def testear_que_falla_si_no_es_espiado
+    persona = Persona.new(20)
+    persona.deberia haber_recibido(:adulto?)
   end
 
 end
@@ -83,4 +85,4 @@ end
 # TADsPec.testear(OtraSuiteDeTests)
 # TADsPec.testear(OtraSuiteDeTests, :pasa, :falla)
 # TADsPec.testear(SuiteMocks, :hay_mock, :no_hay_mock)
-# TADsPec.testear(SuiteEspias, :espia)
+# TADsPec.testear(SuiteEspias, :espia, :falla_si_no_es_espiado)

@@ -15,6 +15,10 @@ class ObjetoEspia
     @objeto_espiado.respond_to?(method, include_private) || super
   end
 
+  def recibio?(metodo)
+    @llamadas.any? { |llamada| llamada[:metodo] == metodo }
+  end
+
   private
 
   def espiar_metodos
