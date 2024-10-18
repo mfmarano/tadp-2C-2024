@@ -19,6 +19,18 @@ class ObjetoEspia
     @llamadas.any? { |llamada| llamada[:metodo] == metodo }
   end
 
+  def recibio_con_argumentos?(metodo, *argumentos)
+    @llamadas.any? { |llamada| llamada[:metodo] == metodo && llamada[:argumentos] == argumentos }
+  end
+
+  def recibio_tantas_veces?(metodo, veces)
+    veces_recibidas(metodo) == veces
+  end
+
+  def veces_recibidas(metodo)
+    @llamadas.count { |llamada| llamada[:metodo] == metodo }
+  end
+
   private
 
   def espiar_metodos

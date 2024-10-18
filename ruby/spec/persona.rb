@@ -13,4 +13,8 @@ class Persona
     "Hola humano"
   end
 
+  def mayor_de?(edad)
+    self.edad > edad
+  end
+
 end

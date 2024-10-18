@@ -79,10 +79,42 @@ class SuiteEspias
     persona.deberia haber_recibido(:adulto?)
   end
 
+  def testear_que_cuenta_veces
+    persona = Persona.new(20)
+    persona = espiar(persona)
+
+    persona.adulto?
+    persona.deberia haber_recibido(:adulto?).veces(1)
+  end
+
+  def testear_que_verifica_argumentos_vacio
+    persona = Persona.new(20)
+    persona = espiar(persona)
+
+    persona.adulto?
+    persona.deberia haber_recibido(:adulto?).con_argumentos
+  end
+
+  def testear_que_verifica_argumentos
+    persona = Persona.new(20)
+    persona = espiar(persona)
+
+    persona.mayor_de?(20)
+    persona.deberia haber_recibido(:mayor_de?).con_argumentos(20)
+  end
+
+  def testear_que_falla_por_argumentos
+    persona = Persona.new(20)
+    persona = espiar(persona)
+
+    persona.mayor_de?(20)
+    persona.deberia haber_recibido(:mayor_de?).con_argumentos(10)
+  end
+
 end
 
 # TADsPec.testear
 # TADsPec.testear(OtraSuiteDeTests)
 # TADsPec.testear(OtraSuiteDeTests, :pasa, :falla)
 # TADsPec.testear(SuiteMocks, :hay_mock, :no_hay_mock)
-# TADsPec.testear(SuiteEspias, :espia, :falla_si_no_es_espiado)
+TADsPec.testear(SuiteEspias, :cuenta_veces, :verifica_argumentos, :falla_por_argumentos)

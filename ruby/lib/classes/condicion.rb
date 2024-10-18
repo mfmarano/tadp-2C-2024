@@ -17,9 +17,10 @@ end
 
 class CondicionEspia < Condicion
 
-  def self.crear_condicion(mensaje, &proposicion)
+  def self.crear_condicion(mensaje, metodo, &proposicion)
     condicion = CondicionEspia.new &proposicion
     condicion.instance_variable_set(:@mensaje, mensaje)
+    condicion.instance_variable_set(:@metodo, metodo)
     condicion
   end
 
@@ -29,10 +30,24 @@ class CondicionEspia < Condicion
   end
 
   def veces(cantidad)
-    # WIP
+    proc_anterior = @proposicion
+    @proposicion = proc { |objeto| proc_anterior.call(objeto) && objeto.recibio_tantas_veces?(@metodo, cantidad) }
+    mensaje_anterior = @mensaje
+    @mensaje = proc { |objeto| proc_anterior.call(objeto) ?
+         "Esperaba recibir #{@metodo} #{cantidad} veces y se recibio #{objeto.veces_recibidas(@metodo)} veces"
+         : mensaje_anterior.call(objeto)
+    }
+    self
   end
 
   def con_argumentos(*argumentos)
-    # WIP
+    proc_anterior = @proposicion
+    @proposicion = proc { |objeto| proc_anterior.call(objeto) && objeto.recibio_con_argumentos?(@metodo, *argumentos) }
+    mensaje_anterior = @mensaje
+    @mensaje = proc { |objeto| proc_anterior.call(objeto) ?
+                 "Se recibio el mensaje #{@metodo}, pero no con los argumentos #{argumentos}"
+                 : mensaje_anterior.call(objeto)
+    }
+    self
   end
 end

@@ -8,7 +8,7 @@ module Aserciones
 
   def haber_recibido(metodo)
     mensaje = proc { |objeto| "#{objeto} no recibió #{metodo}" }
-    CondicionEspia.crear_condicion(mensaje) { |objeto| objeto.recibio? metodo }
+    CondicionEspia.crear_condicion(mensaje, metodo) { |objeto| objeto.recibio? metodo }
   end
 
   def igual(valor)
