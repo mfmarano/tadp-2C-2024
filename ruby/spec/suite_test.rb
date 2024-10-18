@@ -63,7 +63,24 @@ class SuiteMocks
   end
 end
 
+class SuiteEspias
+
+  def testear_que_espia
+    persona = Persona.new(20)
+    persona = espiar(persona)
+
+    persona.saludar
+    persona.adulto?
+
+    puts persona.llamadas
+
+    # WIP
+  end
+
+end
+
 # TADsPec.testear
 # TADsPec.testear(OtraSuiteDeTests)
 # TADsPec.testear(OtraSuiteDeTests, :pasa, :falla)
 # TADsPec.testear(SuiteMocks, :hay_mock, :no_hay_mock)
+# TADsPec.testear(SuiteEspias, :espia)
