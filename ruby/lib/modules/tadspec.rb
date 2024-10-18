@@ -1,4 +1,5 @@
-require_relative './aserciones'
+require_relative 'aserciones'
+require_relative 'espiar'
 require_relative 'deberia'
 require_relative 'mockear'
 require_relative '../exceptions/tadspec_exception'
@@ -18,7 +19,7 @@ module TADsPec
     end
     puts total_results
   end
-
+  
   private
 
   def self.testear_todas_las_suites
@@ -47,6 +48,8 @@ module TADsPec
     end
 
     suite_instance.class.include(Aserciones)
+    suite_instance.class.include(Espiar)
+    
     begin
       suite_instance.instance_eval {
         Object.include Deberia

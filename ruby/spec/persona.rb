@@ -1,10 +1,12 @@
 class Persona
+  attr_accessor :edad
+
   def initialize(edad)
     @edad = edad
   end
 
   def adulto?
-    @edad > 17
+    self.edad > 17
   end
 
   def saludar
