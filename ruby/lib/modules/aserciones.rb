@@ -78,13 +78,14 @@ module Aserciones
   private
 
   def obtener_condicion_ser(symbol)
-    metodo = "#{symbol.to_s.delete_prefix('ser_')}?".to_sym
-    mensaje = proc { |objeto| "Esperaba que #{objeto} sea #{symbol}"}
-    Condicion.crear_condicion(mensaje) { |objeto| objeto.send(metodo) }
+    metodo = "#{symbol.to_s.delete_prefix('ser_')}"
+    mensaje = proc { |objeto| "Esperaba que #{objeto} sea #{metodo}"}
+    Condicion.crear_condicion(mensaje) { |objeto| objeto.send("#{metodo}?") }
   end
 
   def obtener_condicion_tener(symbol, *args)
-    atributo = "@#{symbol.to_s.delete_prefix('tener_')}".to_sym
-    Condicion.new { |objeto| ser(args[0]).verificar(objeto.instance_variable_get(atributo)) }
+    atributo = "@#{symbol.to_s.delete_prefix('tener_')}"
+    mensaje = proc { |objeto| "Esperaba que #{atributo} sea #{args[0]}, encontré #{objeto.instance_variable_get(atributo)}" }
+    Condicion.crear_condicion(mensaje) { |objeto| ser(args[0]).verificar(objeto.instance_variable_get(atributo)) }
   end
 end

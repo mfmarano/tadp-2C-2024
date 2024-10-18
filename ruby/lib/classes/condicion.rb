@@ -1,4 +1,7 @@
 class Condicion
+
+  attr_reader :mensaje
+
   def initialize(&proposicion)
     @proposicion = proposicion
   end
@@ -10,8 +13,7 @@ class Condicion
   end
 
   def verificar(objeto)
-    raise TadspecException.new(@mensaje.call(objeto)) unless @proposicion.call(objeto)
-    true
+    @proposicion.call(objeto)
   end
 end
 

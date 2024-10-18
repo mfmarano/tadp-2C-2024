@@ -1,5 +1,5 @@
 module Deberia
   def deberia(condicion)
-    condicion.verificar(self)
+    raise TadspecException.new(condicion.mensaje.call(self)) unless condicion.verificar(self)
   end
 end
