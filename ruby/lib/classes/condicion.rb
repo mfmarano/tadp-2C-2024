@@ -32,24 +32,27 @@ class CondicionEspia < Condicion
   end
 
   def veces(cantidad)
-    proc_anterior = @proposicion
-    @proposicion = proc { |objeto| proc_anterior.call(objeto) && objeto.recibio_tantas_veces?(@metodo, cantidad) }
-    mensaje_anterior = @mensaje
-    @mensaje = proc { |objeto| proc_anterior.call(objeto) ?
-         "Esperaba recibir #{@metodo} #{cantidad} veces y se recibio #{objeto.veces_recibidas(@metodo)} veces"
-         : mensaje_anterior.call(objeto)
-    }
+    modificar_condicion(
+      proc { |objeto| objeto.recibio_tantas_veces?(@metodo, cantidad) },
+      proc { |objeto| "Esperaba recibir #{@metodo} #{cantidad} veces y se recibio #{objeto.veces_recibidas(@metodo)} veces" }
+    )
     self
   end
 
   def con_argumentos(*argumentos)
-    proc_anterior = @proposicion
-    @proposicion = proc { |objeto| proc_anterior.call(objeto) && objeto.recibio_con_argumentos?(@metodo, *argumentos) }
-    mensaje_anterior = @mensaje
-    @mensaje = proc { |objeto| proc_anterior.call(objeto) ?
-                 "Se recibio el mensaje #{@metodo}, pero no con los argumentos #{argumentos}"
-                 : mensaje_anterior.call(objeto)
-    }
+    modificar_condicion(
+      proc { |objeto| objeto.recibio_con_argumentos?(@metodo, *argumentos) },
+      proc { "Se recibio el mensaje #{@metodo}, pero no con los argumentos #{argumentos}" }
+    )
     self
+  end
+
+  private
+
+  def modificar_condicion(proposicion_nueva, mensaje_nuevo)
+    proposicion_anterior = @proposicion
+    @proposicion = proc { |objeto| proposicion_anterior.call(objeto) && proposicion_nueva.call(objeto) }
+    mensaje_anterior = @mensaje
+    @mensaje = proc { |objeto| proposicion_anterior.call(objeto) ? mensaje_nuevo.call(objeto) : mensaje_anterior.call(objeto) }
   end
 end

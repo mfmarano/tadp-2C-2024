@@ -103,6 +103,14 @@ class SuiteEspias
     persona.deberia haber_recibido(:mayor_de?).con_argumentos(20)
   end
 
+  def testear_que_falla_por_veces
+    persona = Persona.new(20)
+    persona = espiar(persona)
+
+    persona.adulto?
+    persona.deberia haber_recibido(:adulto?).veces(2)
+  end
+
   def testear_que_falla_por_argumentos
     persona = Persona.new(20)
     persona = espiar(persona)
@@ -116,5 +124,5 @@ end
 # TADsPec.testear
 # TADsPec.testear(OtraSuiteDeTests)
 # TADsPec.testear(OtraSuiteDeTests, :pasa, :falla)
-# TADsPec.testear(SuiteMocks, :hay_mock, :no_hay_mock)
-TADsPec.testear(SuiteEspias, :cuenta_veces, :verifica_argumentos, :falla_por_argumentos)
+# TADsPec.testear(SuiteMocks)
+# TADsPec.testear(SuiteEspias)
