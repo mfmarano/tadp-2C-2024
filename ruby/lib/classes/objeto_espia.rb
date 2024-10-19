@@ -4,7 +4,14 @@ class ObjetoEspia
   def initialize(objeto_espiado)
     @objeto_espiado = objeto_espiado
     @llamadas = []
-    espiar_metodos
+    # limpiar el objeto espiado
+  end
+
+  def espiar_metodos
+    # no limitar
+    @objeto_espiado.class.instance_methods(false)
+                   .map { |instance_method| @objeto_espiado.method(instance_method) }
+                   .each { |method| espiar_metodo(method, self) }
   end
 
   def method_missing(method, *args, &block)
@@ -32,12 +39,6 @@ class ObjetoEspia
   end
 
   private
-
-  def espiar_metodos
-    @objeto_espiado.class.instance_methods(false)
-                   .map { |instance_method| @objeto_espiado.method(instance_method) }
-                   .each { |method| espiar_metodo(method, self) }
-  end
 
   def espiar_metodo(method, espia)
     @objeto_espiado.define_singleton_method(method.name) do |*argumentos, &bloque|
