@@ -8,8 +8,7 @@ class ObjetoEspia
   end
 
   def espiar_metodos
-    # no limitar
-    @objeto_espiado.class.instance_methods(false)
+    @objeto_espiado.class.instance_methods
                    .map { |instance_method| @objeto_espiado.method(instance_method) }
                    .each { |method| espiar_metodo(method, self) }
   end
