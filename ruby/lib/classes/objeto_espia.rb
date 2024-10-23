@@ -4,7 +4,6 @@ class ObjetoEspia
   def initialize(objeto_espiado)
     @objeto_espiado = objeto_espiado.clone
     @llamadas = []
-    # limpiar el objeto espiado
   end
 
   def espiar_metodos
