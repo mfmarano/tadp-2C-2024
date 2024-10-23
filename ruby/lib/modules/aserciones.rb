@@ -57,7 +57,7 @@ module Aserciones
     }
   end
 
-  def respond_to_missing?(symbol)
+  def respond_to_missing?(symbol, include_private = false)
     symbol.to_s.start_with?('ser_') || symbol.to_s.start_with?('tener_') || super
   end
 

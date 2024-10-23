@@ -58,4 +58,36 @@ describe 'TADsPec' do
     end
 
   end
+
+  describe 'Espiar' do
+
+    self.class_eval do
+      include Aserciones
+      include Espiar
+    end
+
+    it 'el objeto original no se modifica' do
+      objeto_original = [1, 2, 3]
+      objeto_espia = espiar(objeto_original)
+
+      objeto_espia.push(4)
+
+      objeto_original.deberia ser [1, 2, 3]
+      objeto_espia.objeto_espiado.deberia ser [1, 2, 3, 4]
+    end
+
+    it 'el objeto espiado funciona como debería' do
+      objeto_original = [1, 2, 3]
+      objeto_espia = espiar(objeto_original)
+
+      objeto_espia.push(4)
+      objeto_espia.pop
+
+      objeto_espia.deberia haber_recibido(:push)
+      objeto_espia.deberia haber_recibido(:push).con_argumentos(4)
+      objeto_espia.deberia haber_recibido(:pop)
+      objeto_espia.deberia haber_recibido(:push).veces(1)
+      objeto_espia.deberia haber_recibido(:pop).veces(1)
+    end
+  end
 end
