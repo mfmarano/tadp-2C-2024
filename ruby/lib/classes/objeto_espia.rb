@@ -2,7 +2,7 @@ class ObjetoEspia
   attr_reader :objeto_espiado, :llamadas
 
   def initialize(objeto_espiado)
-    @objeto_espiado = objeto_espiado
+    @objeto_espiado = objeto_espiado.clone
     @llamadas = []
     # limpiar el objeto espiado
   end
