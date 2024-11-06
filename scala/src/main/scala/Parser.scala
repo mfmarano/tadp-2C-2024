@@ -1,6 +1,33 @@
 import scala.util.{Try, Success, Failure}
 
-case class Parser[+T](parse: String => Try[(T, String)])
+case class Parser[+T](parse: String => Try[(T, String)]) {
+  def <|>[A >: T](otherParser: => Parser[A]): Parser[A] = Parser { input =>
+    for {
+      result <- parse(input).recoverWith(_ => otherParser.parse(input))
+    } yield result
+  }
+
+  def <>[A](otherParser: => Parser[A]): Parser[(T, A)] = Parser { input =>
+    for {
+      (result1, rest1) <- parse(input)
+      (result2, rest2) <- otherParser.parse(rest1)
+    } yield ((result1, result2), rest2)
+  }
+
+  def ~>[A](otherParser: => Parser[A]): Parser[A] = Parser { input =>
+    for {
+      (_, rest1) <- parse(input)
+      (result2, rest2) <- otherParser.parse(rest1)
+    } yield (result2, rest2)
+  }
+
+  def <~[A](otherParser: => Parser[A]): Parser[T] = Parser { input =>
+    for {
+      (result1, rest1) <- parse(input)
+      (_, rest2) <- otherParser.parse(rest1)
+    } yield (result1, rest2)
+  }
+}
 
 class ParserException(val message: String) extends RuntimeException
 

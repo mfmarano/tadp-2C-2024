@@ -51,4 +51,41 @@ class ProjectSpec extends AnyFreeSpec {
       }
     }
   }
+
+  "Combinators" - {
+    "<|>" - {
+      "el resultado deberia ser del primer parser que lo retorne" in {
+        val aob = char('a') <|> char('b')
+        aob.parse("arbol") shouldEqual Success(('a', "rbol"))
+        aob.parse("bort") shouldEqual Success(('b', "ort"))
+      }
+    }
+
+    "<>" - {
+      "debería concatenar los resultados de dos parsers" in {
+        val holaMundo = string("hola") <> string("mundo")
+        holaMundo.parse("holamundo") shouldEqual Success((("hola", "mundo"), ""))
+        holaMundo.parse("holamundooo") shouldEqual Success((("hola", "mundo"), "oo"))
+        holaMundo.parse("holachau") shouldBe a[Failure[_]]
+      }
+    }
+
+    "~>" - {
+      "debería retornar el resultado del segundo parser" in {
+        val holaMundo = string("hola") ~> string("mundo")
+        holaMundo.parse("holamundo") shouldEqual Success(("mundo", ""))
+        holaMundo.parse("holamundooo") shouldEqual Success(("mundo", "oo"))
+        holaMundo.parse("holachau") shouldBe a[Failure[_]]
+      }
+    }
+
+    "<~" - {
+      "debería retornar el resultado del primer parser" in {
+        val holaMundo = string("hola") <~ string("mundo")
+        holaMundo.parse("holamundo") shouldEqual Success(("hola", ""))
+        holaMundo.parse("holamundooo") shouldEqual Success(("hola", "oo"))
+        holaMundo.parse("holachau") shouldBe a[Failure[_]]
+      }
+    }
+  }
 }
