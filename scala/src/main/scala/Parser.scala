@@ -29,10 +29,8 @@ case class Parser[+T](parse: String => Try[(T, String)]) {
   }
 
   def sepBy[A](sep: => Parser[A]): Parser[List[T]] = Parser { input =>
-    (this <~ (sep.opt)).+.parse(input)
+    (this <~ sep.opt).+.parse(input)
   }
-
-
 
   def satisfies(condition: T => Boolean): Parser[T] = Parser { input =>
     parse(input).flatMap { (result, rest) =>
@@ -103,18 +101,18 @@ object Parsers {
   }
 
   val integer: Parser[Int] = Parser { input =>
-    val pattern = """^-?\d+""".r
-    pattern.findPrefixOf(input) match {
-      case Some(n) => Try((n.toInt, input.drop(n.length)))
-      case None => Failure(new ParserException("Esperaba un entero"))
-    }
+    val negativeDigits = char('-').opt <> digit.*
+    negativeDigits.parse(input).flatMap((result, rest) => result match {
+      case (Some(menos), list) => Success((menos::list).mkString.toInt, rest)
+      case (None, list) => Success(list.mkString.toInt, rest)
+    })
   }
 
   val double: Parser[Double] = Parser { input =>
-    val pattern = """^-?\d+(\.\d+)?""".r
-    pattern.findPrefixOf(input) match {
-      case Some(n) => Try((n.toDouble, input.drop(n.length)))
-      case None => Failure(new ParserException("Esperaba un decimal"))
-    }
+    val decimalParser = integer <> char('.').opt <> digit.*
+    decimalParser.parse(input).flatMap( (result, rest) => result match {
+      case ((int, Some(_)), list) => Success((int.toString + "." + list.mkString).toDouble, rest)
+      case ((int, None), _) => Success(int.toDouble, rest)
+    })
   }
 }

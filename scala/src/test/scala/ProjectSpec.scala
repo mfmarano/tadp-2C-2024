@@ -50,6 +50,8 @@ class ProjectSpec extends AnyFreeSpec {
       "debería parsear un decimal" in {
         double.parse("123.45abc") shouldEqual Success((123.45, "abc"))
         double.parse("-123.45abc") shouldEqual Success((-123.45, "abc"))
+        double.parse("123") shouldEqual Success((123, ""))
+        double.parse("123.as") shouldEqual Success((123.0, "as"))
         double.parse("abc") shouldBe a[Failure[_]]
       }
     }
