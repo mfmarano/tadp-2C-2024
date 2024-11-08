@@ -27,6 +27,40 @@ case class Parser[+T](parse: String => Try[(T, String)]) {
       (_, rest2) <- otherParser.parse(rest1)
     } yield (result1, rest2)
   }
+
+  def satisfies(condition: T => Boolean): Parser[T] = Parser { input =>
+    parse(input).flatMap { (result, rest) =>
+      if (condition(result)) Success(result, rest)
+      else Failure(new ParserException(s"El resultado $result no satisface el predicado"))
+    }
+  }
+
+  def opt: Parser[Option[T]] = Parser { input =>
+    parse(input) match {
+      case Success(result, rest) => Success(Some(result), rest)
+      case Failure(_) => Success(None, input)
+    }
+  }
+
+  def * : Parser[List[T]] = Parser { input =>
+    parse(input) match {
+      case Success(_) => +.parse(input)
+      case Failure(_) => Success(List.empty, input)
+    }
+  }
+
+  def + : Parser[List[T]] = Parser { input =>
+    parse(input).flatMap { (result, rest) =>
+      +.parse(rest) match {
+        case Success(moreResults, finalRest) => Success(result :: moreResults, finalRest)
+        case Failure(_) => Success(List(result), rest)
+      }
+    }
+  }
+
+  def map[A](f: T => A): Parser[A] = Parser { input =>
+    parse(input).map { (result, rest) => (f(result), rest) }
+  }
 }
 
 class ParserException(val message: String) extends RuntimeException

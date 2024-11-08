@@ -90,5 +90,40 @@ class ProjectSpec extends AnyFreeSpec {
         holaMundo.parse("holachau") shouldBe a[Failure[_]]
       }
     }
+
+    "satisfies" - {
+      "debería fallar si el resultado no satisface la condición" in {
+        val digitoPar = digit.satisfies(_ % 2 == 0)
+        digitoPar.parse("246") shouldEqual Success(('2', "46"))
+        digitoPar.parse("135") shouldBe a[Failure[_]]
+      }
+    }
+
+    "opt" - {
+      "debería retornar un Some si el parser tiene éxito" in {
+        val talVezIn = string("in").opt
+        val precedencia = talVezIn <> string("fija")
+        precedencia.parse("infija") shouldEqual Success((Some("in"), "fija"), "")
+        precedencia.parse("fija") shouldEqual Success((None, "fija"), "")
+      }
+    }
+
+    "*" - {
+      "debería retornar una lista con los resultados de los parsers" in {
+        val digitos = digit.*
+        digitos.parse("1234") shouldEqual Success((List('1', '2', '3', '4'), ""))
+        digitos.parse("hola") shouldEqual Success((List.empty, "hola"))
+        digitos.parse("") shouldEqual Success((List.empty, ""))
+      }
+    }
+
+    "+" - {
+      "debería retornar una lista con los resultados de los parsers" in {
+        val digitos = digit.+
+        digitos.parse("1234") shouldEqual Success((List('1', '2', '3', '4'), ""))
+        digitos.parse("hola") shouldBe a[Failure[_]]
+        digitos.parse("") shouldBe a[Failure[_]]
+      }
+    }
   }
 }
