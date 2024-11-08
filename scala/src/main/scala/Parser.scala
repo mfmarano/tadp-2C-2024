@@ -35,26 +35,31 @@ object Parsers {
 
   val anyChar: Parser[Char] = Parser { input =>
     if (input.isEmpty) Failure(new ParserException("Entrada vacía"))
-    else Success((input.head, input.tail))
+    else Success(input.head, input.tail)
   }
 
   def char(c: Char): Parser[Char] = Parser { input =>
-    anyChar.parse(input).flatMap { case (result, rest) =>
-      if (result == c) Success((c, rest))
+    anyChar.parse(input).flatMap { (result, rest) =>
+      if (result == c) Success(c, rest)
       else Failure(new ParserException(s"Esperaba $c pero encontré $result"))
     }
   }
 
   val digit: Parser[Char] = Parser { input =>
-    anyChar.parse(input).flatMap { case (result, rest) =>
-      if (result.isDigit) Success((result, rest))
+    anyChar.parse(input).flatMap { (result, rest) =>
+      if (result.isDigit) Success(result, rest)
       else Failure(new ParserException(s"$result no es un dígito"))
     }
   }
 
   def string(str: String): Parser[String] = Parser { input =>
-    if (input.startsWith(str)) Success((str, input.drop(str.length)))
-    else Failure(new ParserException(s"Esperaba $str"))
+    str.foldLeft[Try[(String, String)]](Success("", input)) { (acc, c) =>
+      acc.flatMap { (result, rest) =>
+        char(c).parse(rest).map { (parsedChar, rest) =>
+          (result :+ parsedChar, rest)
+        }
+      }
+    }
   }
 
   val integer: Parser[Int] = Parser { input =>

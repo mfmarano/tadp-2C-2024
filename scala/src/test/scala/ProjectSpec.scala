@@ -31,6 +31,9 @@ class ProjectSpec extends AnyFreeSpec {
     "string" - {
       "debería parsear una cadena específica" in {
         string("hola").parse("hola mundo!") shouldEqual Success(("hola", " mundo!"))
+        string("").parse("") shouldBe Success(("", ""))
+        string("").parse("hola mundo!") shouldBe Success(("", "hola mundo!"))
+        string("hola").parse("") shouldBe a[Failure[_]]
         string("hola").parse("holgado") shouldBe a[Failure[_]]
       }
     }
