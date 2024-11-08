@@ -28,6 +28,9 @@ case class Parser[+T](parse: String => Try[(T, String)]) {
     } yield (result1, rest2)
   }
 
+  // TODO: implementar sepBy
+  def sepBy[A](sep: => Parser[A]): Parser[List[T]] = ???
+
   def satisfies(condition: T => Boolean): Parser[T] = Parser { input =>
     parse(input).flatMap { (result, rest) =>
       if (condition(result)) Success(result, rest)

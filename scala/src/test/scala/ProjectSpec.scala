@@ -91,6 +91,15 @@ class ProjectSpec extends AnyFreeSpec {
       }
     }
 
+    "sepBy" ignore {
+      "debería parsear una lista de elementos separados por un separador" in {
+        val numeroDeTelefono = integer.sepBy(char('-'))
+        numeroDeTelefono.parse("4356-1234") shouldEqual Success((List(4356, 1234), ""))
+        numeroDeTelefono.parse("hola-chau") shouldBe a[Failure[_]]
+        numeroDeTelefono.parse("1234 5678") shouldEqual Success((List(1234), " 5678"))
+      }
+    }
+
     "satisfies" - {
       "debería fallar si el resultado no satisface la condición" in {
         val digitoPar = digit.satisfies(_ % 2 == 0)
