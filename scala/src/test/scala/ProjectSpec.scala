@@ -95,6 +95,14 @@ class ProjectSpec extends AnyFreeSpec {
 
     "sepBy" - {
       "debería parsear una lista de elementos separados por un separador" in {
+        val integerChar = integer <~ char('-').opt
+        integerChar.parse("1234-5678") shouldEqual Success((1234, "5678"))
+        integerChar.parse("1234") shouldEqual Success((1234, ""))
+
+        val integerCharKleene = (integer <~ char('-').opt).*
+        integerCharKleene.parse("1234-5678") shouldEqual Success(List(1234, 5678), "")
+        integerCharKleene.parse("1234-5678-9") shouldEqual Success(List(1234, 5678, 9), "")
+
         val numeroDeTelefono = integer.sepBy(char('-'))
         numeroDeTelefono.parse("4356-1234") shouldEqual Success((List(4356, 1234), ""))
         numeroDeTelefono.parse("hola-chau") shouldBe a[Failure[_]]
@@ -123,6 +131,7 @@ class ProjectSpec extends AnyFreeSpec {
       "debería retornar una lista con los resultados de los parsers" in {
         val digitos = digit.*
         digitos.parse("1234") shouldEqual Success((List('1', '2', '3', '4'), ""))
+        digitos.parse("1a234") shouldEqual Success((List('1'), "a234"))
         digitos.parse("hola") shouldEqual Success((List.empty, "hola"))
         digitos.parse("") shouldEqual Success((List.empty, ""))
       }
@@ -134,17 +143,6 @@ class ProjectSpec extends AnyFreeSpec {
         digitos.parse("1234") shouldEqual Success((List('1', '2', '3', '4'), ""))
         digitos.parse("hola") shouldBe a[Failure[_]]
         digitos.parse("") shouldBe a[Failure[_]]
-      }
-    }
-
-    "pruebas random" ignore {
-      "lo dejo para entender" in {
-        val integerChar = integer <~ char('-').opt
-        integerChar.parse("1234-5678") shouldEqual Success((1234, "5678"))
-        integerChar.parse("5678") shouldEqual Success((5678, ""))
-
-        val integerKleene = (integer <~ char('-').opt).*
-        integerKleene.parse("1234-5678") shouldEqual Success(List(1234, 5678), "")
       }
     }
   }

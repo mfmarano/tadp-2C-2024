@@ -28,9 +28,8 @@ case class Parser[+T](parse: String => Try[(T, String)]) {
     } yield (result1, rest2)
   }
 
-  def sepBy[A](sep: => Parser[A]): Parser[List[T]] = Parser { input =>
-    (this <~ sep.opt).+.parse(input)
-  }
+  def sepBy[A](sep: => Parser[A]): Parser[List[T]] = (this <~ sep.opt).+
+
 
   def satisfies(condition: T => Boolean): Parser[T] = Parser { input =>
     parse(input).flatMap { (result, rest) =>
