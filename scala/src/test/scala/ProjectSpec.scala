@@ -95,13 +95,23 @@ class ProjectSpec extends AnyFreeSpec {
 
     "sepBy" - {
       "debería parsear una lista de elementos separados por un separador" in {
-        val integerChar = integer <~ char('-').opt
-        integerChar.parse("1234-5678") shouldEqual Success((1234, "5678"))
-        integerChar.parse("1234") shouldEqual Success((1234, ""))
+        val charInteger = char('-') ~> integer
+        charInteger.parse("1234-5678") shouldBe a[Failure[_]]
+        charInteger.parse("-1234-5678") shouldEqual Success(1234, "-5678")
 
-        val integerCharKleene = (integer <~ char('-').opt).*
-        integerCharKleene.parse("1234-5678") shouldEqual Success(List(1234, 5678), "")
-        integerCharKleene.parse("1234-5678-9") shouldEqual Success(List(1234, 5678, 9), "")
+        val charIntegerKleene = (char('-') ~> integer).*
+        charIntegerKleene.parse("1234-5678") shouldEqual Success(List(), "1234-5678")
+        charIntegerKleene.parse("-1234-5678") shouldEqual Success(List(1234, 5678), "")
+
+        val integerCharIntegerKleene = integer <> (char('-') ~> integer).*
+        integerCharIntegerKleene.parse("1234-5678") shouldEqual Success((1234, List(5678)), "")
+        integerCharIntegerKleene.parse("1234-5678-9") shouldEqual Success((1234, List(5678, 9)), "")
+        integerCharIntegerKleene.parse("-1234-5678-9") shouldBe Success(((-1234, List(5678, 9)), ""))
+        integerCharIntegerKleene.parse("0--1234-5678-9") shouldBe Success(((0, List(-1234,5678, 9)), ""))
+
+        val digitosSeparadosPorPunto = digit.sepBy(char('.'))
+        digitosSeparadosPorPunto.parse("1.2.3.4") shouldEqual Success(List('1','2','3','4'), "")
+        digitosSeparadosPorPunto.parse("1234") shouldEqual Success(List('1'), "234")
 
         val numeroDeTelefono = integer.sepBy(char('-'))
         numeroDeTelefono.parse("4356-1234") shouldEqual Success((List(4356, 1234), ""))

@@ -13,18 +13,18 @@ case class Parser[+T](parse: String => Try[(T, String)]) {
   }
 
   def ~>[A](otherParser: => Parser[A]): Parser[A] = Parser { input =>
-    (this <> otherParser).parse(input).map {
-      case ((_, result2), rest) => (result2, rest)
-    }
+    (this <> otherParser).parse(input)
+      .map { case ((_, result), rest) => (result, rest) }
   }
 
   def <~[A](otherParser: => Parser[A]): Parser[T] = Parser { input =>
-    (this <> otherParser).parse(input).map {
-      case ((result1, _), rest) => (result1, rest)
-    }
+    (this <> otherParser).parse(input)
+      .map { case ((result, _), rest) => (result, rest) }
   }
 
-  def sepBy[A](sep: => Parser[A]): Parser[List[T]] = (this <~ sep.opt).+
+  def sepBy[A](sep: => Parser[A]): Parser[List[T]] =
+    (this <> (sep ~> this).*)
+      .map { (result, rest) => result :: rest }
 
   def satisfies(condition: T => Boolean): Parser[T] = Parser { input =>
     parse(input).flatMap { (result, rest) =>
