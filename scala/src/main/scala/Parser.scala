@@ -68,28 +68,13 @@ object Parsers {
     else Success(input.head, input.tail)
   }
 
-  def char(c: Char): Parser[Char] = Parser { input =>
-    anyChar.parse(input).flatMap { (result, rest) =>
-      if (result == c) Success(c, rest)
-      else Failure(new ParserException(s"Esperaba $c pero encontré $result"))
-    }
-  }
+  def char(c: Char): Parser[Char] = anyChar.satisfies(_ == c)
 
-  val digit: Parser[Char] = Parser { input =>
-    anyChar.parse(input).flatMap { (result, rest) =>
-      if (result.isDigit) Success(result, rest)
-      else Failure(new ParserException(s"$result no es un dígito"))
-    }
-  }
+  val digit: Parser[Char] = anyChar.satisfies(_.isDigit)
 
   def string(str: String): Parser[String] = Parser { input =>
-    str.foldLeft[Try[(String, String)]](Success("", input)) { (acc, c) =>
-      acc.flatMap { (result, rest) =>
-        char(c).parse(rest).map { (parsedChar, rest) =>
-          (result :+ parsedChar, rest)
-        }
-      }
-    }
+    if (input.startsWith(str)) Success((str, input.drop(str.length)))
+    else Failure(new ParserException(s"Esperaba $str"))
   }
 
   val integer: Parser[Int] = Parser { input =>
