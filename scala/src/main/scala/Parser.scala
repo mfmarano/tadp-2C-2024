@@ -2,9 +2,7 @@ import scala.util.{Try, Success, Failure}
 
 case class Parser[+T](parse: String => Try[(T, String)]) {
   def <|>[A >: T](otherParser: => Parser[A]): Parser[A] = Parser { input =>
-    for {
-      result <- parse(input).recoverWith(_ => otherParser.parse(input))
-    } yield result
+    parse(input).recoverWith(_ => otherParser.parse(input))
   }
 
   def <>[A](otherParser: => Parser[A]): Parser[(T, A)] = Parser { input =>
@@ -15,21 +13,18 @@ case class Parser[+T](parse: String => Try[(T, String)]) {
   }
 
   def ~>[A](otherParser: => Parser[A]): Parser[A] = Parser { input =>
-    for {
-      (_, rest1) <- parse(input)
-      (result2, rest2) <- otherParser.parse(rest1)
-    } yield (result2, rest2)
+    (this <> otherParser).parse(input).map {
+      case ((_, result2), rest) => (result2, rest)
+    }
   }
 
   def <~[A](otherParser: => Parser[A]): Parser[T] = Parser { input =>
-    for {
-      (result1, rest1) <- parse(input)
-      (_, rest2) <- otherParser.parse(rest1)
-    } yield (result1, rest2)
+    (this <> otherParser).parse(input).map {
+      case ((result1, _), rest) => (result1, rest)
+    }
   }
 
   def sepBy[A](sep: => Parser[A]): Parser[List[T]] = (this <~ sep.opt).+
-
 
   def satisfies(condition: T => Boolean): Parser[T] = Parser { input =>
     parse(input).flatMap { (result, rest) =>
@@ -46,17 +41,15 @@ case class Parser[+T](parse: String => Try[(T, String)]) {
   }
 
   def * : Parser[List[T]] = Parser { input =>
-    parse(input) match {
-      case Success(_) => +.parse(input)
-      case Failure(_) => Success(List.empty, input)
+    +.parse(input).recover {
+      _ => (List.empty[T], input)
     }
   }
 
   def + : Parser[List[T]] = Parser { input =>
     parse(input).flatMap { (result, rest) =>
-      +.parse(rest) match {
-        case Success(moreResults, finalRest) => Success(result :: moreResults, finalRest)
-        case Failure(_) => Success(List(result), rest)
+      *.parse(rest).map { (moreResults, finalRest) =>
+        (result :: moreResults, finalRest)
       }
     }
   }
