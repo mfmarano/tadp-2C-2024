@@ -13,19 +13,19 @@ case class Traslacion(desplazamientoX: Int, desplazamientoY: Int, figura: Figura
 object ParserImagenes {
   import Parsers._
 
-  val espacio: Parser[Option[Char]] = char(' ').opt
+  val espacios: Parser[List[Char]] = char(' ').*
 
   val punto: Parser[Punto] = for {
     x <- integer
-    _ <- espacio
+    _ <- espacios
     _ <- char('@')
-    _ <- espacio
+    _ <- espacios
     y <- integer
   } yield Punto(x, y)
 
   def argumentos[T](parser: Parser[T]): Parser[List[T]] = for {
     _ <- char('[')
-    args <- parser.sepBy(char(',') <~ espacio)
+    args <- parser.sepBy(char(',') <~ espacios)
     _ <- char(']')
   } yield args
 
