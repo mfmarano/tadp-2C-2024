@@ -13,7 +13,8 @@ case class Traslacion(desplazamientoX: Int, desplazamientoY: Int, figura: Figura
 object ParserImagenes {
   import Parsers._
 
-  val espacios: Parser[List[Char]] = char(' ').*
+  private val espacios: Parser[List[Char]] =
+    (char(' ') <|> char('\r') <|> char('\n')).*
 
   val punto: Parser[Punto] = for {
     x <- integer
@@ -23,15 +24,17 @@ object ParserImagenes {
     y <- integer
   } yield Punto(x, y)
 
-  def argumentos[T](parser: Parser[T]): Parser[List[T]] = for {
-    _ <- char('[')
+  def argumentos[T](delimiter1: Char, delimiter2: Char, parser: Parser[T]): Parser[List[T]] = for {
+    _ <- char(delimiter1)
+    _ <- espacios
     args <- parser.sepBy(char(',') <~ espacios)
-    _ <- char(']')
+    _ <- espacios
+    _ <- char(delimiter2)
   } yield args
 
   val triangulo: Parser[Triangulo] = for {
     _ <- string("triangulo")
-    puntos <- argumentos(punto)
+    puntos <- argumentos('[', ']', punto)
   } yield puntos match {
     case v1 :: v2 :: v3 :: Nil => Triangulo(v1, v2, v3)
     case _ => throw new ParserException("Un triángulo necesita 3 puntos")
@@ -39,7 +42,7 @@ object ParserImagenes {
 
   val rectangulo: Parser[Rectangulo] = for {
     _ <- string("rectangulo")
-    puntos <- argumentos(punto)
+    puntos <- argumentos('[', ']', punto)
   } yield puntos match {
     case vSupIzq :: vInfDer :: Nil => Rectangulo(vSupIzq, vInfDer)
     case _ => throw new ParserException("Un rectángulo necesita 2 puntos")
@@ -47,7 +50,7 @@ object ParserImagenes {
 
   val circulo: Parser[Circulo] = for {
     _ <- string("circulo")
-    args <- argumentos(punto <|> integer.map(Punto(_, 0)))
+    args <- argumentos('[', ']', punto <|> integer.map(Punto(_, 0)))
   } yield args match {
     case centro :: radio :: Nil => Circulo(centro, radio.x)
     case _ => throw new ParserException("Un círculo necesita un centro y un radio")
