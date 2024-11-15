@@ -1,4 +1,5 @@
 import Parsers.*
+import ParserImagenes.*
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.matchers.should.Matchers.*
@@ -153,6 +154,69 @@ class ProjectSpec extends AnyFreeSpec {
         digitos.parse("1234") shouldEqual Success((List('1', '2', '3', '4'), ""))
         digitos.parse("hola") shouldBe a[Failure[_]]
         digitos.parse("") shouldBe a[Failure[_]]
+      }
+    }
+  }
+
+  "Parsers de figuras" - {
+    "punto" - {
+      "debería parsear un punto" in {
+        punto.parse("1 @ 2") shouldEqual Success((Punto(1, 2), ""))
+        punto.parse("1@2") shouldEqual Success((Punto(1, 2), ""))
+        punto.parse("1@ 2") shouldEqual Success((Punto(1, 2), ""))
+        punto.parse("1 @2") shouldEqual Success((Punto(1, 2), ""))
+        punto.parse("1@2 ") shouldEqual Success((Punto(1, 2), " "))
+        punto.parse("1 @ 2 ") shouldEqual Success((Punto(1, 2), " "))
+        punto.parse("1@2a") shouldBe Success((Punto(1, 2), "a"))
+        punto.parse("1@") shouldBe a[Failure[_]]
+        punto.parse("@2") shouldBe a[Failure[_]]
+        punto.parse("1") shouldBe a[Failure[_]]
+        punto.parse("") shouldBe a[Failure[_]]
+      }
+    }
+
+    "argumentos" - {
+      "debería parsear una lista de argumentos entre corchetes" in {
+        val parser = argumentos(punto)
+        parser.parse("[1@2, 3@4, 5@6]") shouldEqual Success(List(Punto(1, 2), Punto(3, 4), Punto(5, 6)), "")
+        parser.parse("[1@2]") shouldEqual Success(List(Punto(1, 2)), "")
+        parser.parse("[1@2, 3, 4]") shouldBe a[Failure[_]]
+        parser.parse("[1@2, (3@4), 5@6]") shouldBe a[Failure[_]]
+        parser.parse("(1@2, 3@4, 5@6)") shouldBe a[Failure[_]]
+      }
+    }
+
+    "triángulo" - {
+      "debería parsear un triángulo" in {
+        triangulo.parse("triangulo[1@2, 3@4, 5@6]") shouldEqual Success(Triangulo(Punto(1, 2), Punto(3, 4), Punto(5, 6)), "")
+        triangulo.parse("triangulo[1@2, 3@4, 5@6] ") shouldEqual Success(Triangulo(Punto(1, 2), Punto(3, 4), Punto(5, 6)), " ")
+        triangulo.parse("triangulo[1@2, 3@4, 5@6]a") shouldEqual Success(Triangulo(Punto(1, 2), Punto(3, 4), Punto(5, 6)), "a")
+        triangulo.parse("triangulo[1@2, 3@4, 5@6") shouldBe a[Failure[_]]
+        triangulo.parse("triangulo[1@2, 3@4, 5@6, 7@8]") shouldBe a[Failure[_]]
+        triangulo.parse("triangulo[1@2, 3@4]") shouldBe a[Failure[_]]
+        triangulo.parse("triangulo[1@2]") shouldBe a[Failure[_]]
+      }
+    }
+
+    "rectángulo" - {
+      "debería parsear un rectángulo" in {
+        rectangulo.parse("rectangulo[1@2, 3@4]") shouldEqual Success(Rectangulo(Punto(1, 2), Punto(3, 4)), "")
+        rectangulo.parse("rectangulo[1@2, 3@4] ") shouldEqual Success(Rectangulo(Punto(1, 2), Punto(3, 4)), " ")
+        rectangulo.parse("rectangulo[1@2, 3@4]a") shouldEqual Success(Rectangulo(Punto(1, 2), Punto(3, 4)), "a")
+        rectangulo.parse("rectangulo[1@2, 3@4") shouldBe a[Failure[_]]
+        rectangulo.parse("rectangulo[1@2, 3@4, 5@6]") shouldBe a[Failure[_]]
+        rectangulo.parse("rectangulo[1@2]") shouldBe a[Failure[_]]
+      }
+    }
+
+    "círculo" - {
+      "debería parsear un círculo" in {
+        circulo.parse("circulo[1@2, 3]") shouldEqual Success(Circulo(Punto(1, 2), 3), "")
+        circulo.parse("circulo[1@2, 3] ") shouldEqual Success(Circulo(Punto(1, 2), 3), " ")
+        circulo.parse("circulo[1@2, 3]a") shouldEqual Success(Circulo(Punto(1, 2), 3), "a")
+        circulo.parse("circulo[1@2, 3") shouldBe a[Failure[_]]
+        circulo.parse("circulo[1@2, 3, 4]") shouldBe a[Failure[_]]
+        circulo.parse("circulo[1@2]") shouldBe a[Failure[_]]
       }
     }
   }
