@@ -55,4 +55,13 @@ object ParserImagenes {
     case centro :: radio :: Nil => Circulo(centro, radio.x)
     case _ => throw new ParserException("Un círculo necesita un centro y un radio")
   }
+
+  private val figuraSimple: Parser[Figura] = triangulo <|> rectangulo <|> circulo
+
+  private val figura: Parser[Figura] = figuraSimple <|> grupo
+
+  val grupo: Parser[Grupo] = for {
+    _ <- string("grupo")
+    figuras <- argumentos('(', ')', figura)
+  } yield Grupo(figuras)
 }

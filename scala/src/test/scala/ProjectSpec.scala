@@ -108,10 +108,10 @@ class ProjectSpec extends AnyFreeSpec {
         integerCharIntegerKleene.parse("1234-5678") shouldEqual Success((1234, List(5678)), "")
         integerCharIntegerKleene.parse("1234-5678-9") shouldEqual Success((1234, List(5678, 9)), "")
         integerCharIntegerKleene.parse("-1234-5678-9") shouldBe Success(((-1234, List(5678, 9)), ""))
-        integerCharIntegerKleene.parse("0--1234-5678-9") shouldBe Success(((0, List(-1234,5678, 9)), ""))
+        integerCharIntegerKleene.parse("0--1234-5678-9") shouldBe Success(((0, List(-1234, 5678, 9)), ""))
 
         val digitosSeparadosPorPunto = digit.sepBy(char('.'))
-        digitosSeparadosPorPunto.parse("1.2.3.4") shouldEqual Success(List('1','2','3','4'), "")
+        digitosSeparadosPorPunto.parse("1.2.3.4") shouldEqual Success(List('1', '2', '3', '4'), "")
         digitosSeparadosPorPunto.parse("1234") shouldEqual Success(List('1'), "234")
 
         val numeroDeTelefono = integer.sepBy(char('-'))
@@ -218,6 +218,49 @@ class ProjectSpec extends AnyFreeSpec {
         circulo.parse("circulo[1@2, 3") shouldBe a[Failure[_]]
         circulo.parse("circulo[1@2, 3, 4]") shouldBe a[Failure[_]]
         circulo.parse("circulo[1@2]") shouldBe a[Failure[_]]
+      }
+    }
+
+    "grupo" - {
+      "debería parsear un grupo de figuras" in {
+        val grupoSimple = """grupo(
+                            triangulo[200 @ 50, 101 @ 335, 299 @ 335],
+                            circulo[200 @ 350, 100]
+                        )"""
+
+        grupo.parse(grupoSimple) shouldEqual Success(Grupo(List(
+          Triangulo(Punto(200, 50), Punto(101, 335), Punto(299, 335)),
+          Circulo(Punto(200, 350), 100))), "")
+
+        val grupoAnidado = """grupo(
+                                  grupo(
+                                      triangulo[250 @ 150, 150 @ 300, 350 @ 300],
+                                      triangulo[150 @ 300, 50 @ 450, 250 @ 450],
+                                      triangulo[350 @ 300, 250 @ 450, 450 @ 450]
+                                  ),
+                                  grupo(
+                                      rectangulo[460 @ 90, 470 @ 100],
+                                      rectangulo[430 @ 210, 500 @ 220],
+                                      rectangulo[430 @ 210, 440 @ 230],
+                                      rectangulo[490 @ 210, 500 @ 230],
+                                      rectangulo[450 @ 100, 480 @ 260]
+                                  )
+                              )"""
+
+        grupo.parse(grupoAnidado) shouldEqual Success(Grupo(List(
+          Grupo(List(
+            Triangulo(Punto(250, 150), Punto(150, 300), Punto(350, 300)),
+            Triangulo(Punto(150, 300), Punto(50, 450), Punto(250, 450)),
+            Triangulo(Punto(350, 300), Punto(250, 450), Punto(450, 450))
+          )),
+          Grupo(List(
+            Rectangulo(Punto(460, 90), Punto(470, 100)),
+            Rectangulo(Punto(430, 210), Punto(500, 220)),
+            Rectangulo(Punto(430, 210), Punto(440, 230)),
+            Rectangulo(Punto(490, 210), Punto(500, 230)),
+            Rectangulo(Punto(450, 100), Punto(480, 260))
+          ))
+        )), "")
       }
     }
   }
