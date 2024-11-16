@@ -8,7 +8,7 @@ case class Grupo(figuras: List[Figura]) extends Figura
 case class Color(r: Int, g: Int, b: Int, figura: Figura) extends Figura
 case class Escala(factorX: Double, factorY: Double, figura: Figura) extends Figura
 case class Rotacion(grados: Double, figura: Figura) extends Figura
-case class Traslacion(desplazamientoX: Int, desplazamientoY: Int, figura: Figura) extends Figura
+case class Traslacion(dX: Int, dY: Int, figura: Figura) extends Figura
 
 object ParserImagenes {
 
@@ -74,49 +74,40 @@ object ParserImagenes {
 
   val color: Parser[Color] = for {
     _ <- string("color")
-    valores <- argumentos('[', ']', rgb)
-    _ <- espacios
-    figs <- argumentos('(', ')', figura).satisfies(figs => figs.size == 1)
+    valores <- argumentos(rgb, '[', ']')
+    figura <- delimitadoPor(figura, '(', ')')
   } yield valores match {
-    case r :: g :: b :: Nil => Color(r, g, b, figs.head)
-    case _ => throw new ParserException("Color necesita tres valores RGB")
+    case r :: g :: b :: Nil => Color(r, g, b, figura)
+    case _ => throw new ParserException("Color necesita 3 valores RGB")
   }
 
   val escala: Parser[Escala] = for {
     _ <- string("escala")
-    valores <- argumentos('[', ']', double)
-    _ <- espacios
-    figs <- argumentos('(', ')', figura).satisfies(figs => figs.size == 1)
-  } yield valores match {
-    case factorX :: factorY :: Nil => Escala(factorX, factorY, figs.head)
-    case _ => throw new ParserException("Escala necesita dos factores")
+    factores <- argumentos(double, '[', ']')
+    figura <- delimitadoPor(figura, '(', ')')
+  } yield factores match {
+    case factorX :: factorY :: Nil => Escala(factorX, factorY, figura)
+    case _ => throw new ParserException("Escala necesita 2 factores")
   }
 
-
-  private def normalizarGrados(grados: Double): Double = {
-    val normalizado = grados % 360
-    if (normalizado < 0) normalizado + 360 else normalizado
-  }
-
+  private def normalizarGrados(grados: Double) = ((grados % 360) + 360) % 360
 
   val rotacion: Parser[Rotacion] = for {
     _ <- string("rotacion")
-    valores <- argumentos('[', ']', double)
-    _ <- espacios
-    figs <- argumentos('(', ')', figura).satisfies(figs => figs.size == 1)
-  } yield valores match {
-    case grados :: Nil => Rotacion(normalizarGrados(grados), figs.head)
-    case _ => throw new ParserException("Rotación necesita un grados");
+    grados <- argumentos(double, '[', ']')
+    figura <- delimitadoPor(figura, '(', ')')
+  } yield grados match {
+    case grados :: Nil => Rotacion(normalizarGrados(grados), figura)
+    case _ => throw new ParserException("Rotación necesita grados");
   }
 
   val traslacion: Parser[Traslacion] = for {
     _ <- string("traslacion")
-    valores <- argumentos('[', ']', integer)
-    _ <- espacios
-    figs <- argumentos('(', ')', figura).satisfies(figs => figs.size == 1)
-  } yield valores match {
-    case dx :: dy :: Nil => Traslacion(dx, dy, figs.head)
-    case _ => throw new ParserException("Traslación necesita dos factores");
+    desplazamientos <-  argumentos(integer, '[', ']')
+    figura <- delimitadoPor(figura, '(', ')')
+  } yield desplazamientos match {
+    case dx :: dy :: Nil => Traslacion(dx, dy, figura)
+    case _ => throw new ParserException("Traslación necesita 2 factores de desplazamiento");
   }
 
 }

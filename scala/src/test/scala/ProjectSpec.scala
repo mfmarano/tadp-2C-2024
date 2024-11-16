@@ -264,35 +264,6 @@ class ProjectSpec extends AnyFreeSpec {
       }
     }
 
-    "escala" - {
-      "debería parsear una escala" in {
-        escala.parse("escala[2, 3](triangulo[250 @ 150, 150 @ 300, 350 @ 300])") shouldEqual Success(Escala(2, 3, Triangulo(Punto(250, 150), Punto(150, 300), Punto(350, 300))), "")
-        escala.parse("escala[2, 3]()") shouldBe a[Failure[_]]
-
-        val escalaConMasDeUnaFigura =
-          """escala[2, 3](
-            triangulo[250 @ 150, 150 @ 300, 350 @ 300],
-            triangulo[250 @ 150, 150 @ 300, 350 @ 300]
-            )
-          """
-
-        escala.parse(escalaConMasDeUnaFigura) shouldBe a[Failure[_]]
-
-        val escalaConGrupo =
-          """escala[2, 3](
-                    grupo(
-                      triangulo[250 @ 150, 150 @ 300, 350 @ 300],
-                      triangulo[250 @ 150, 150 @ 300, 350 @ 300]
-                    )
-              )"""
-
-        escala.parse(escalaConGrupo) shouldBe Success((Escala(2, 3, Grupo(List(
-          Triangulo(Punto(250, 150), Punto(150, 300), Punto(350, 300)),
-          Triangulo(Punto(250, 150), Punto(150, 300), Punto(350, 300))
-        )))), "")
-      }
-    }
-
     "color" - {
       "debería parsear un color " in {
         color.parse("color[2, 3, 50](triangulo[250 @ 150, 150 @ 300, 350 @ 300])") shouldEqual Success(Color(2, 3, 50, Triangulo(Punto(250, 150), Punto(150, 300), Punto(350, 300))), "")
@@ -318,45 +289,42 @@ class ProjectSpec extends AnyFreeSpec {
                     )
               )"""
 
-        color.parse(colorConGrupo) shouldEqual Success((Color(2,3,4, Grupo(List(
+        color.parse(colorConGrupo) shouldEqual Success(Color(2,3,4, Grupo(List(
           Triangulo(Punto(250, 150), Punto(150, 300), Punto(350, 300)),
           Triangulo(Punto(250, 150), Punto(150, 300), Punto(350, 300))
-        )))), "")
+        ))), "")
       }
     }
 
+    "escala" - {
+      "debería parsear una escala" in {
+        escala.parse("escala[2, 3](triangulo[250 @ 150, 150 @ 300, 350 @ 300])") shouldEqual Success(
+          Escala(2, 3, Triangulo(Punto(250, 150), Punto(150, 300), Punto(350, 300))), "")
+        escala.parse("escala[2, 3]()") shouldBe a[Failure[_]]
 
-    "traslacion" - {
-      "debería parsear una traslacion" in {
-        traslacion.parse("traslacion[200, 50](triangulo[250 @ 150, 150 @ 300, 350 @ 300])") shouldEqual Success(Traslacion(200, 50, Triangulo(Punto(250, 150), Punto(150, 300), Punto(350, 300))), "")
-        traslacion.parse("traslacion[50, 60]()") shouldBe a[Failure[_]]
-        traslacion.parse("traslacion[200, 50, 60](triangulo[250 @ 150, 150 @ 300, 350 @ 300])") shouldBe a[Failure[_]]
+        val escalaConMasDeUnaFigura =
+          """escala[2, 3](
+                triangulo[250 @ 150, 150 @ 300, 350 @ 300],
+                triangulo[250 @ 150, 150 @ 300, 350 @ 300]
+                )
+              """
 
-        val traslacionConMasDeUnaFigura =
-          """traslacion[50, 60](
-                    triangulo[250 @ 150, 150 @ 300, 350 @ 300],
-                    triangulo[250 @ 150, 150 @ 300, 350 @ 300]
-                    )
-                  """
+        escala.parse(escalaConMasDeUnaFigura) shouldBe a[Failure[_]]
 
-        traslacion.parse(traslacionConMasDeUnaFigura) shouldBe a[Failure[_]]
-
-
-        val traslacionConGrupo =
-          """traslacion[200, 50](
+        val escalaConGrupo =
+          """escala[2, 3](
                         grupo(
                           triangulo[250 @ 150, 150 @ 300, 350 @ 300],
                           triangulo[250 @ 150, 150 @ 300, 350 @ 300]
                         )
                   )"""
 
-        traslacion.parse(traslacionConGrupo) shouldEqual Success((Traslacion(200, 50, Grupo(List(
+        escala.parse(escalaConGrupo) shouldBe Success(Escala(2, 3, Grupo(List(
           Triangulo(Punto(250, 150), Punto(150, 300), Punto(350, 300)),
           Triangulo(Punto(250, 150), Punto(150, 300), Punto(350, 300))
-        )))), "")
+        ))), "")
       }
     }
-
 
     "rotacion" - {
       "debería parsear una rotacion" in {
@@ -382,10 +350,41 @@ class ProjectSpec extends AnyFreeSpec {
                             )
                       )"""
 
-        rotacion.parse(rotacionConGrupo) shouldEqual Success((Rotacion(200, Grupo(List(
+        rotacion.parse(rotacionConGrupo) shouldEqual Success(Rotacion(200, Grupo(List(
           Triangulo(Punto(250, 150), Punto(150, 300), Punto(350, 300)),
           Triangulo(Punto(250, 150), Punto(150, 300), Punto(350, 300))
-        )))), "")
+        ))), "")
+      }
+    }
+
+    "traslacion" - {
+      "debería parsear una traslacion" in {
+        traslacion.parse("traslacion[200, 50](triangulo[250 @ 150, 150 @ 300, 350 @ 300])") shouldEqual Success(Traslacion(200, 50, Triangulo(Punto(250, 150), Punto(150, 300), Punto(350, 300))), "")
+        traslacion.parse("traslacion[50, 60]()") shouldBe a[Failure[_]]
+        traslacion.parse("traslacion[200, 50, 60](triangulo[250 @ 150, 150 @ 300, 350 @ 300])") shouldBe a[Failure[_]]
+
+        val traslacionConMasDeUnaFigura =
+          """traslacion[50, 60](
+                        triangulo[250 @ 150, 150 @ 300, 350 @ 300],
+                        triangulo[250 @ 150, 150 @ 300, 350 @ 300]
+                        )
+                      """
+
+        traslacion.parse(traslacionConMasDeUnaFigura) shouldBe a[Failure[_]]
+
+
+        val traslacionConGrupo =
+          """traslacion[200, 50](
+                            grupo(
+                              triangulo[250 @ 150, 150 @ 300, 350 @ 300],
+                              triangulo[250 @ 150, 150 @ 300, 350 @ 300]
+                            )
+                      )"""
+
+        traslacion.parse(traslacionConGrupo) shouldEqual Success(Traslacion(200, 50, Grupo(List(
+          Triangulo(Punto(250, 150), Punto(150, 300), Punto(350, 300)),
+          Triangulo(Punto(250, 150), Punto(150, 300), Punto(350, 300))
+        ))), "")
       }
     }
   }
