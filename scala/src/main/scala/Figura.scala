@@ -1,3 +1,5 @@
+import scala.util.Try
+
 sealed trait Figura
 
 case class Punto(x: Int, y: Int)
@@ -14,16 +16,17 @@ object ParserImagenes {
 
   import Parsers._
 
-  private val espacios: Parser[List[Char]] =
-    (char(' ') <|> char('\r') <|> char('\n')).*
+  private lazy val figuraSimple: Parser[Figura] = triangulo <|> rectangulo <|> circulo
 
-  val punto: Parser[Punto] = for {
-    x <- integer
-    _ <- espacios
-    _ <- char('@')
-    _ <- espacios
-    y <- integer
-  } yield Punto(x, y)
+  private lazy val transformacion: Parser[Figura] = color <|> escala <|> rotacion <|> traslacion
+
+  private lazy val figura: Parser[Figura] = figuraSimple <|> transformacion <|> grupo
+
+  private val espacios: Parser[List[Char]] = (char(' ') <|> char('\r') <|> char('\n')).*
+
+  private val rgb: Parser[Int] = integer.satisfies(n => n >= 0 && n <= 255)
+
+  private def normalizarGrados(grados: Double) = ((grados % 360) + 360) % 360
 
   private def delimitadoPor[T](parser: Parser[T], principio: Char, fin: Char): Parser[T] = for {
     _ <- char(principio)
@@ -33,8 +36,18 @@ object ParserImagenes {
     _ <- char(fin)
   } yield t
 
-  def argumentos[T](parser: Parser[T], principio: Char, fin: Char): Parser[List[T]] =
+  private def argumentos[T](parser: Parser[T], principio: Char, fin: Char): Parser[List[T]] =
     delimitadoPor(parser.sepBy(char(',') <~ espacios), principio, fin)
+
+  def parsearFigura(entrada: String): Try[Figura] = figura.parse(entrada).map(_._1)
+
+  val punto: Parser[Punto] = for {
+    x <- integer
+    _ <- espacios
+    _ <- char('@')
+    _ <- espacios
+    y <- integer
+  } yield Punto(x, y)
 
   val triangulo: Parser[Triangulo] = for {
     _ <- string("triangulo")
@@ -60,17 +73,10 @@ object ParserImagenes {
     case _ => throw new ParserException("Un círculo necesita un centro y un radio")
   }
 
-  private val figuraSimple: Parser[Figura] = triangulo <|> rectangulo <|> circulo
-
-  private val figura: Parser[Figura] = figuraSimple <|> grupo
-
   val grupo: Parser[Grupo] = for {
     _ <- string("grupo")
     figuras <- argumentos(figura, '(', ')')
   } yield Grupo(figuras)
-
-
-  private val rgb: Parser[Int] = integer.satisfies(n => n >= 0 && n <= 255)
 
   val color: Parser[Color] = for {
     _ <- string("color")
@@ -90,8 +96,6 @@ object ParserImagenes {
     case _ => throw new ParserException("Escala necesita 2 factores")
   }
 
-  private def normalizarGrados(grados: Double) = ((grados % 360) + 360) % 360
-
   val rotacion: Parser[Rotacion] = for {
     _ <- string("rotacion")
     grados <- argumentos(double, '[', ']')
@@ -103,11 +107,10 @@ object ParserImagenes {
 
   val traslacion: Parser[Traslacion] = for {
     _ <- string("traslacion")
-    desplazamientos <-  argumentos(integer, '[', ']')
+    desplazamientos <- argumentos(integer, '[', ']')
     figura <- delimitadoPor(figura, '(', ')')
   } yield desplazamientos match {
     case dx :: dy :: Nil => Traslacion(dx, dy, figura)
     case _ => throw new ParserException("Traslación necesita 2 factores de desplazamiento");
   }
-
 }

@@ -175,18 +175,6 @@ class ProjectSpec extends AnyFreeSpec {
       }
     }
 
-    "argumentos" - {
-      "debería parsear una lista de argumentos entre corchetes" in {
-        val parser = argumentos(punto, '[', ']')
-        parser.parse("[1@2, 3@4, 5@6]") shouldEqual Success(List(Punto(1, 2), Punto(3, 4), Punto(5, 6)), "")
-        parser.parse("[1@2]") shouldEqual Success(List(Punto(1, 2)), "")
-        parser.parse("[ 1@2 ]") shouldEqual Success(List(Punto(1, 2)), "")
-        parser.parse("[1@2, 3, 4]") shouldBe a[Failure[_]]
-        parser.parse("[1@2, (3@4), 5@6]") shouldBe a[Failure[_]]
-        parser.parse("(1@2, 3@4, 5@6)") shouldBe a[Failure[_]]
-      }
-    }
-
     "triángulo" - {
       "debería parsear un triángulo" in {
         triangulo.parse("triangulo[1@2, 3@4, 5@6]") shouldEqual Success(Triangulo(Punto(1, 2), Punto(3, 4), Punto(5, 6)), "")
@@ -223,7 +211,8 @@ class ProjectSpec extends AnyFreeSpec {
 
     "grupo" - {
       "debería parsear un grupo de figuras" in {
-        val grupoSimple = """grupo(
+        val grupoSimple =
+          """grupo(
                             triangulo[200 @ 50, 101 @ 335, 299 @ 335],
                             circulo[200 @ 350, 100]
                         )"""
@@ -232,7 +221,8 @@ class ProjectSpec extends AnyFreeSpec {
           Triangulo(Punto(200, 50), Punto(101, 335), Punto(299, 335)),
           Circulo(Punto(200, 350), 100))), "")
 
-        val grupoAnidado = """grupo(
+        val grupoAnidado =
+          """grupo(
                                   grupo(
                                       triangulo[250 @ 150, 150 @ 300, 350 @ 300],
                                       triangulo[150 @ 300, 50 @ 450, 250 @ 450],
@@ -289,7 +279,7 @@ class ProjectSpec extends AnyFreeSpec {
                     )
               )"""
 
-        color.parse(colorConGrupo) shouldEqual Success(Color(2,3,4, Grupo(List(
+        color.parse(colorConGrupo) shouldEqual Success(Color(2, 3, 4, Grupo(List(
           Triangulo(Punto(250, 150), Punto(150, 300), Punto(350, 300)),
           Triangulo(Punto(250, 150), Punto(150, 300), Punto(350, 300))
         ))), "")
