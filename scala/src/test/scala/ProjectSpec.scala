@@ -177,7 +177,7 @@ class ProjectSpec extends AnyFreeSpec {
 
     "argumentos" - {
       "debería parsear una lista de argumentos entre corchetes" in {
-        val parser = argumentos('[', ']', punto)
+        val parser = argumentos(punto, '[', ']')
         parser.parse("[1@2, 3@4, 5@6]") shouldEqual Success(List(Punto(1, 2), Punto(3, 4), Punto(5, 6)), "")
         parser.parse("[1@2]") shouldEqual Success(List(Punto(1, 2)), "")
         parser.parse("[ 1@2 ]") shouldEqual Success(List(Punto(1, 2)), "")
