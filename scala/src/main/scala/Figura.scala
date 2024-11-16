@@ -64,4 +64,55 @@ object ParserImagenes {
     _ <- string("grupo")
     figuras <- argumentos('(', ')', figura)
   } yield Grupo(figuras)
+
+
+  private val rgb: Parser[Int] = integer.satisfies(n => n >= 0 && n <= 255)
+
+  val color: Parser[Color] = for {
+    _ <- string("color")
+    valores <- argumentos('[', ']', rgb)
+    _ <- espacios
+    figs <- argumentos('(', ')', figura).satisfies(figs => figs.size == 1)
+  } yield valores match {
+    case r :: g :: b :: Nil => Color(r, g, b, figs.head)
+    case _ => throw new ParserException("Color necesita tres valores RGB")
+  }
+
+  val escala: Parser[Escala] = for {
+    _ <- string("escala")
+    valores <- argumentos('[', ']', double)
+    _ <- espacios
+    figs <- argumentos('(', ')', figura).satisfies(figs => figs.size == 1)
+  } yield valores match {
+    case factorX :: factorY :: Nil => Escala(factorX, factorY, figs.head)
+    case _ => throw new ParserException("Escala necesita dos factores")
+  }
+
+
+  private def normalizarGrados(grados: Double): Double = {
+    val normalizado = grados % 360
+    if (normalizado < 0) normalizado + 360 else normalizado
+  }
+
+
+  val rotacion: Parser[Rotacion] = for {
+    _ <- string("rotacion")
+    valores <- argumentos('[', ']', double)
+    _ <- espacios
+    figs <- argumentos('(', ')', figura).satisfies(figs => figs.size == 1)
+  } yield valores match {
+    case grados :: Nil => Rotacion(normalizarGrados(grados), figs.head)
+    case _ => throw new ParserException("Rotación necesita un grados");
+  }
+
+  val traslacion: Parser[Traslacion] = for {
+    _ <- string("traslacion")
+    valores <- argumentos('[', ']', integer)
+    _ <- espacios
+    figs <- argumentos('(', ')', figura).satisfies(figs => figs.size == 1)
+  } yield valores match {
+    case dx :: dy :: Nil => Traslacion(dx, dy, figs.head)
+    case _ => throw new ParserException("Traslación necesita dos factores");
+  }
+
 }
