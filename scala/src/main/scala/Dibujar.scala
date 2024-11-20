@@ -1,6 +1,8 @@
 import scalafx.scene.paint.Color
 import tadp.drawing.TADPDrawingAdapter
 
+import scala.util.{Failure, Success}
+
 object Dibujar extends App {
   TADPDrawingAdapter.forScreen { adapter =>
     // Aca es donde iria su codigo que USA el adapter
@@ -20,30 +22,9 @@ object Dibujar extends App {
 
 object GUIDeTextoADibujo extends App {
   TADPDrawingAdapter.forInteractiveScreen { (texto, adapter) =>
-    // Aca es donde iria su codigo que USA el adapter, y convierte de String a envios de mensaje
-    // al adapter
-    
-    // EJEMPLO de como usar el texto para dibujar (Ustedes van a tener que usar el parser)
-    var i: Int = 0
-    texto.lines().forEach { line =>
-      val offset = 40 * i
-      line match
-        case "triangulo" =>
-          adapter.triangle((20 + offset, 40), (30 + offset, 20), (40 + offset, 40))
-          i += 1
-        case "rectangulo" =>
-          adapter.rectangle((20 + offset, 20), (50 + offset, 40))
-          i += 1
-        case "cuadrado" =>
-          adapter.rectangle((20 + offset, 20), (40 + offset, 40))
-          i += 1
-        case "circulo" =>
-          adapter.circle((30 + offset, 30), 10)
-          i += 1
-        case "rojo" => adapter.beginColor(Color.Red)
-        case "verde" => adapter.beginColor(Color.Green)
-        case "azul" => adapter.beginColor(Color.Blue)
-        case _ => ()
+    ParserImagenes.parsearFigura(texto) match {
+      case Success(figura) => Interprete.dibujar(figura)(adapter)
+      case Failure(error) => println(s"Error al parsear el texto")
     }
   }
 }
