@@ -22,7 +22,7 @@ object ParserImagenes {
 
   private lazy val figura: Parser[Figura] = figuraSimple <|> transformacion <|> grupo
 
-  private val espacios: Parser[List[Char]] = (char(' ') <|> char('\r') <|> char('\n')).*
+  private val espacios: Parser[List[Char]] = (char(' ') <|> char('\r') <|> char('\n') <|> char('\t')).*
 
   private val rgb: Parser[Int] = integer.satisfies(n => n >= 0 && n <= 255)
 
