@@ -1,5 +1,6 @@
 import Parsers.*
 import ParserImagenes.*
+import SimplificadorAST.*
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.matchers.should.Matchers.*
@@ -375,6 +376,54 @@ class ProjectSpec extends AnyFreeSpec {
           Triangulo(Punto(250, 150), Punto(150, 300), Punto(350, 300)),
           Triangulo(Punto(250, 150), Punto(150, 300), Punto(350, 300))
         ))), "")
+      }
+    }
+  }
+
+  "SimplificadorAST" - {
+    "simplificar" - {
+      "debería mantener el color interno cuando hay colores anidados" in {
+        val figura = Color(255, 0, 0, Color(0, 255, 0, Rectangulo(Punto(0, 0), Punto(100, 100))))
+        val simplificada = simplificar(figura)
+        simplificada shouldBe Color(0, 255, 0, Rectangulo(Punto(0, 0), Punto(100, 100)))
+      }
+
+      "debería combinar rotaciones anidadas" in {
+        val figura = Rotacion(300, Rotacion(100, Rectangulo(Punto(0, 0), Punto(100, 100))))
+        val simplificada = simplificar(figura)
+        simplificada shouldBe Rotacion(40, Rectangulo(Punto(0, 0), Punto(100, 100)))
+      }
+
+      "debería combinar escalas anidadas" in {
+        val figura = Escala(2, 3, Escala(3, 2, Circulo(Punto(0, 0), 10)))
+        val simplificada = simplificar(figura)
+        simplificada shouldBe Escala(6, 6, Circulo(Punto(0, 0), 10))
+      }
+
+      "debería combinar traslaciones anidadas" in {
+        val figura = Traslacion(100, 200, Traslacion(50, 50, Triangulo(Punto(0, 0), Punto(10, 0), Punto(0, 10))))
+        val simplificada = simplificar(figura)
+        simplificada shouldBe Traslacion(150, 250, Triangulo(Punto(0, 0), Punto(10, 0), Punto(0, 10)))
+      }
+
+      "debería eliminar transformaciones nulas" in {
+        val figura = Rotacion(0, Escala(1, 1, Traslacion(0, 0, Circulo(Punto(0, 0), 10))))
+        val simplificada = simplificar(figura)
+        simplificada shouldBe Circulo(Punto(0, 0), 10)
+      }
+
+      "debería extraer transformaciones comunes del grupo" in {
+        val grupo = Grupo(List(
+          Color(200, 200, 200, Rectangulo(Punto(0, 0), Punto(100, 100))),
+          Color(200, 200, 200, Circulo(Punto(50, 50), 25))
+        ))
+
+        
+        val simplificada = simplificar(grupo)
+        simplificada shouldBe Color(200, 200, 200, Grupo(List(
+          Rectangulo(Punto(0, 0), Punto(100, 100)),
+          Circulo(Punto(50, 50), 25)
+        )))
       }
     }
   }
