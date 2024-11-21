@@ -417,9 +417,8 @@ class ProjectSpec extends AnyFreeSpec {
           Color(200, 200, 200, Rectangulo(Punto(0, 0), Punto(100, 100))),
           Color(200, 200, 200, Circulo(Punto(50, 50), 25))
         ))
-
-        
         val simplificada = simplificar(grupo)
+
         simplificada shouldBe Color(200, 200, 200, Grupo(List(
           Rectangulo(Punto(0, 0), Punto(100, 100)),
           Circulo(Punto(50, 50), 25)
