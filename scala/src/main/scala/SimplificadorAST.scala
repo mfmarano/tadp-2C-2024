@@ -1,9 +1,29 @@
 object SimplificadorAST {
   def simplificar(figura: Figura): Figura = figura match {
     case c: Color => simplificarColor(c)
-    case g: Grupo => simplificarGrupo(g)
     case t: Transformacion => simplificarTransformacion(t)
+    case g: Grupo => simplificarGrupo(g)
     case f => f
+  }
+
+  private def simplificarColor(color: Color): Figura = color match {
+    case Color(_, _, _, Color(r, g, b, f)) => Color(r, g, b, simplificar(f))
+    case _ => color
+  }
+
+  private def simplificarTransformacion(transformacion: Transformacion): Figura = {
+    if (transformacion.esNula) return simplificar(getFiguraInterna(transformacion))
+
+    val figuraSimplificada = simplificar(getFiguraInterna(transformacion))
+    (transformacion, figuraSimplificada) match {
+      case (r1: Rotacion, r2: Rotacion) =>
+        r1.combinar(r2)
+      case (e1: Escala, e2: Escala) =>
+        e1.combinar(e2)
+      case (t1: Traslacion, t2: Traslacion) =>
+        t1.combinar(t2)
+      case _ => transformacion.reconstruir(figuraSimplificada)
+    }
   }
 
   private def simplificarGrupo(grupo: Grupo): Figura = {
@@ -57,26 +77,6 @@ object SimplificadorAST {
     }
 
     grupo
-  }
-
-  private def simplificarColor(color: Color): Figura = color match {
-    case Color(_, _, _, Color(r, g, b, f)) => Color(r, g, b, simplificar(f))
-    case _ => color
-  }
-
-  private def simplificarTransformacion(transformacion: Transformacion): Figura = {
-    if (transformacion.esNula) return simplificar(getFiguraInterna(transformacion))
-
-    val figuraSimplificada = simplificar(getFiguraInterna(transformacion))
-    (transformacion, figuraSimplificada) match {
-      case (r1: Rotacion, r2: Rotacion) =>
-        r1.combinar(r2)
-      case (e1: Escala, e2: Escala) =>
-        e1.combinar(e2)
-      case (t1: Traslacion, t2: Traslacion) =>
-        t1.combinar(t2)
-      case _ => transformacion.reconstruir(figuraSimplificada)
-    }
   }
 
   private def getFiguraInterna(figura: Figura): Figura = figura match {
