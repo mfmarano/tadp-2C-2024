@@ -60,7 +60,7 @@ object SimplificadorAST {
   }
 
   private def simplificarColor(color: Color): Figura = color match {
-    case Color(_, _, _, Color(r, g, b, f)) => simplificar(Color(r, g, b, f))
+    case Color(_, _, _, Color(r, g, b, f)) => Color(r, g, b, simplificar(f))
     case _ => color
   }
 
