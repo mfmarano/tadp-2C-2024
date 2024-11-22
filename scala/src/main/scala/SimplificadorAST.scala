@@ -12,17 +12,14 @@ object SimplificadorAST {
   }
 
   private def simplificarTransformacion(transformacion: Transformacion): Figura = {
-    if (transformacion.esNula) return simplificar(getFiguraInterna(transformacion))
+    val figuraTransformadaSimplificada = simplificar(transformacion.figuraTransformada)
 
-    val figuraSimplificada = simplificar(getFiguraInterna(transformacion))
-    (transformacion, figuraSimplificada) match {
-      case (r1: Rotacion, r2: Rotacion) =>
-        r1.combinar(r2)
-      case (e1: Escala, e2: Escala) =>
-        e1.combinar(e2)
-      case (t1: Traslacion, t2: Traslacion) =>
-        t1.combinar(t2)
-      case _ => transformacion.reconstruir(figuraSimplificada)
+    (transformacion, figuraTransformadaSimplificada) match {
+      case (t, _) if t.esNula => figuraTransformadaSimplificada
+      case (r1: Rotacion, r2: Rotacion) => r1.combinar(r2)
+      case (e1: Escala, e2: Escala) => e1.combinar(e2)
+      case (t1: Traslacion, t2: Traslacion) => t1.combinar(t2)
+      case _ => transformacion.aplicarA(figuraTransformadaSimplificada)
     }
   }
 
@@ -55,25 +52,25 @@ object SimplificadorAST {
     val rotaciones = grupo.figuras.map(extraerGrados)
     if (rotaciones.forall(_.isDefined) && rotaciones.map(_.get).distinct.size == 1) {
       val grados = rotaciones.head.get
-      return Rotacion(grados, Grupo(grupo.figuras.map(x=>getFiguraInterna(x))))
+      return Rotacion(grados, Grupo(grupo.figuras.map(x => getFiguraInterna(x))))
     }
 
     val desplazamientos = grupo.figuras.map(extraerDesplazamiento)
     if (desplazamientos.forall(_.isDefined) && desplazamientos.map(_.get).distinct.size == 1) {
       val (dx, dy) = desplazamientos.head.get
-      return Traslacion(dx, dy, Grupo(grupo.figuras.map(x=>getFiguraInterna(x))))
+      return Traslacion(dx, dy, Grupo(grupo.figuras.map(x => getFiguraInterna(x))))
     }
 
     val escalas = grupo.figuras.map(extraerEscala)
     if (escalas.forall(_.isDefined) && escalas.map(_.get).distinct.size == 1) {
       val (factorX, factorY) = escalas.head.get
-      return Escala(factorX, factorY, Grupo(grupo.figuras.map(x=>getFiguraInterna(x))))
+      return Escala(factorX, factorY, Grupo(grupo.figuras.map(x => getFiguraInterna(x))))
     }
 
     val colores = grupo.figuras.map(extraerColor)
     if (colores.forall(_.isDefined) && colores.map(_.get).distinct.size == 1) {
       val (r, g, b) = colores.head.get
-      return Color(r, g, b, Grupo(grupo.figuras.map(x=>getFiguraInterna(x))))
+      return Color(r, g, b, Grupo(grupo.figuras.map(x => getFiguraInterna(x))))
     }
 
     grupo

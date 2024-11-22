@@ -11,14 +11,17 @@ case class Color(r: Int, g: Int, b: Int, figura: Figura) extends Figura
 
 sealed trait Transformacion extends Figura {
   def esNula: Boolean
-  def reconstruir(figura: Figura): Figura
+  def aplicarA(figura: Figura): Figura
+  def figuraTransformada: Figura
 }
 
 case class Rotacion(grados: Double, figura: Figura) extends Transformacion {
   override def esNula: Boolean = grados == 0
 
-  override def reconstruir(figura: Figura): Figura =
+  override def aplicarA(figura: Figura): Figura =
     Rotacion(this.grados, figura)
+
+  override def figuraTransformada: Figura = figura
 
   def combinar(otra: Rotacion): Rotacion =
     Rotacion((this.grados + otra.grados) % 360, otra.figura)
@@ -27,8 +30,10 @@ case class Rotacion(grados: Double, figura: Figura) extends Transformacion {
 case class Escala(factorX: Double, factorY: Double, figura: Figura) extends Transformacion {
   override def esNula: Boolean = factorX == 1 && factorY == 1
 
-  override def reconstruir(figura: Figura): Figura =
+  override def aplicarA(figura: Figura): Figura =
     Escala(this.factorX, this.factorY, figura)
+
+  override def figuraTransformada: Figura = figura
 
   def combinar(otra: Escala): Escala =
     Escala(this.factorX * otra.factorX, this.factorY * otra.factorY, otra.figura)
@@ -37,8 +42,10 @@ case class Escala(factorX: Double, factorY: Double, figura: Figura) extends Tran
 case class Traslacion(dX: Int, dY: Int, figura: Figura) extends Transformacion {
   override def esNula: Boolean = dX == 0 && dY == 0
 
-  override def reconstruir(figura: Figura): Figura =
+  override def aplicarA(figura: Figura): Figura =
     Traslacion(this.dX, this.dY, figura)
+
+  override def figuraTransformada: Figura = figura
 
   def combinar(otra: Traslacion): Traslacion =
     Traslacion(this.dX + otra.dX, this.dY + otra.dY, otra.figura)
