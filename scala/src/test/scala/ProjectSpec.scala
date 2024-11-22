@@ -423,6 +423,42 @@ class ProjectSpec extends AnyFreeSpec {
           Rectangulo(Punto(0, 0), Punto(100, 100)),
           Circulo(Punto(50, 50), 25)
         )))
+
+
+        val grupoEscala = Grupo(List(
+          Escala(200, 200, Rectangulo(Punto(0, 0), Punto(100, 100))),
+          Escala(200, 200, Circulo(Punto(50, 50), 25))
+        ))
+        val simplificadaEscala = simplificar(grupoEscala)
+
+        simplificadaEscala shouldBe Escala(200, 200, Grupo(List(
+          Rectangulo(Punto(0, 0), Punto(100, 100)),
+          Circulo(Punto(50, 50), 25)
+        )))
+
+
+        val grupoRotacion = Grupo(List(
+          Rotacion(45, Rectangulo(Punto(0, 0), Punto(100, 100))),
+          Rotacion(45, Circulo(Punto(50, 50), 25))
+        ))
+          val simplificadaRotacion = simplificar(grupoRotacion)
+
+        simplificadaRotacion shouldBe Rotacion(45, Grupo(List(
+          Rectangulo(Punto(0, 0), Punto(100, 100)),
+          Circulo(Punto(50, 50), 25)
+        )))
+
+
+        val grupoTraslacion = Grupo(List(
+          Traslacion(100, 100, Rectangulo(Punto(0, 0), Punto(100, 100))),
+          Traslacion(100, 100, Circulo(Punto(50, 50), 25))
+        ))
+        val simplificadaTraslacion = simplificar(grupoTraslacion)
+
+        simplificadaTraslacion shouldBe Traslacion(100, 100, Grupo(List(
+          Rectangulo(Punto(0, 0), Punto(100, 100)),
+          Circulo(Punto(50, 50), 25)
+        )))
       }
     }
   }

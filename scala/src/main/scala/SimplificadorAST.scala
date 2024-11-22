@@ -17,13 +17,43 @@ object SimplificadorAST {
       case _ => None
     }
 
+    def extraerGrados(figura: Figura): Option[Double] = figura match {
+      case Rotacion(grados, _) => Some(grados)
+      case _ => None
+    }
+
+    def extraerDesplazamiento(figura: Figura): Option[(Int, Int)] = figura match {
+      case Traslacion(dx, dy, _) => Some((dx, dy))
+      case _ => None
+    }
+
+    def extraerEscala(figura: Figura): Option[(Double, Double)] = figura match {
+      case Escala(factorX, factorY, _) => Some((factorX, factorY))
+      case _ => None
+    }
+
+    val rotaciones = grupo.figuras.map(extraerGrados)
+    if (rotaciones.forall(_.isDefined) && rotaciones.map(_.get).distinct.size == 1) {
+      val grados = rotaciones.head.get
+      return Rotacion(grados, Grupo(grupo.figuras.map(x=>getFiguraInterna(x))))
+    }
+
+    val desplazamientos = grupo.figuras.map(extraerDesplazamiento)
+    if (desplazamientos.forall(_.isDefined) && desplazamientos.map(_.get).distinct.size == 1) {
+      val (dx, dy) = desplazamientos.head.get
+      return Traslacion(dx, dy, Grupo(grupo.figuras.map(x=>getFiguraInterna(x))))
+    }
+
+    val escalas = grupo.figuras.map(extraerEscala)
+    if (escalas.forall(_.isDefined) && escalas.map(_.get).distinct.size == 1) {
+      val (factorX, factorY) = escalas.head.get
+      return Escala(factorX, factorY, Grupo(grupo.figuras.map(x=>getFiguraInterna(x))))
+    }
+
     val colores = grupo.figuras.map(extraerColor)
     if (colores.forall(_.isDefined) && colores.map(_.get).distinct.size == 1) {
       val (r, g, b) = colores.head.get
-      return Color(r, g, b, Grupo(grupo.figuras.map {
-        case Color(_, _, _, f) => f
-        case f => f
-      }))
+      return Color(r, g, b, Grupo(grupo.figuras.map(x=>getFiguraInterna(x))))
     }
 
     grupo
