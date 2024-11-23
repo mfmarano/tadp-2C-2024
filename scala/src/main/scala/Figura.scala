@@ -8,9 +8,48 @@ case class Rectangulo(vSupIzq: Punto, vInfDer: Punto) extends Figura
 case class Circulo(centro: Punto, radio: Int) extends Figura
 case class Grupo(figuras: List[Figura]) extends Figura
 case class Color(r: Int, g: Int, b: Int, figura: Figura) extends Figura
-case class Escala(factorX: Double, factorY: Double, figura: Figura) extends Figura
-case class Rotacion(grados: Double, figura: Figura) extends Figura
-case class Traslacion(dX: Int, dY: Int, figura: Figura) extends Figura
+
+sealed trait Transformacion extends Figura {
+  def esNula: Boolean
+  def aplicarA(figura: Figura): Figura
+  def figuraTransformada: Figura
+}
+
+case class Rotacion(grados: Double, figura: Figura) extends Transformacion {
+  override def esNula: Boolean = grados == 0
+
+  override def aplicarA(figura: Figura): Figura =
+    Rotacion(this.grados, figura)
+
+  override def figuraTransformada: Figura = figura
+
+  def combinar(otra: Rotacion): Rotacion =
+    Rotacion((this.grados + otra.grados) % 360, otra.figura)
+}
+
+case class Escala(factorX: Double, factorY: Double, figura: Figura) extends Transformacion {
+  override def esNula: Boolean = factorX == 1 && factorY == 1
+
+  override def aplicarA(figura: Figura): Figura =
+    Escala(this.factorX, this.factorY, figura)
+
+  override def figuraTransformada: Figura = figura
+
+  def combinar(otra: Escala): Escala =
+    Escala(this.factorX * otra.factorX, this.factorY * otra.factorY, otra.figura)
+}
+
+case class Traslacion(dX: Int, dY: Int, figura: Figura) extends Transformacion {
+  override def esNula: Boolean = dX == 0 && dY == 0
+
+  override def aplicarA(figura: Figura): Figura =
+    Traslacion(this.dX, this.dY, figura)
+
+  override def figuraTransformada: Figura = figura
+
+  def combinar(otra: Traslacion): Traslacion =
+    Traslacion(this.dX + otra.dX, this.dY + otra.dY, otra.figura)
+}
 
 object ParserImagenes {
 

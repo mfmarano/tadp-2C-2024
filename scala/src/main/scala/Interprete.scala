@@ -4,7 +4,7 @@ object Interprete {
   private type Adapter = TADPDrawingAdapter
 
   def dibujar(figura: Figura): Adapter => Adapter = adapter => {
-    figura match {
+    SimplificadorAST.simplificar(figura) match {
       case Triangulo(v1, v2, v3) =>
         adapter.triangle((v1.x, v1.y), (v2.x, v2.y), (v3.x, v3.y))
       case Rectangulo(vSupIzq, vInfDer) =>
