@@ -153,3 +153,7 @@ object ParserImagenes {
     case _ => throw new ParserException("Traslación necesita 2 factores de desplazamiento");
   }
 }
+
+// TODO: No forzar `argumentos` para reutilizarlo (por ejemplo en `circulo`)
+// TODO: No repetir validacion de cantidad de argumentos, tratar de parametrizarlo
+// TODO: Convertir `figuraTransformada` de `Transformacion` en val

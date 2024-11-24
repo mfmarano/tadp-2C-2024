@@ -84,3 +84,5 @@ object SimplificadorAST {
     case f => f
   }
 }
+
+// TODO: Revisar `simplificarGrupo`
