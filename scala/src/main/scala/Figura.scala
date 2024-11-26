@@ -12,43 +12,37 @@ case class Color(r: Int, g: Int, b: Int, figura: Figura) extends Figura
 sealed trait Transformacion extends Figura {
   def esNula: Boolean
   def aplicarA(figura: Figura): Figura
-  def figuraTransformada: Figura
+  val figuraTransformada: Figura
 }
 
-case class Rotacion(grados: Double, figura: Figura) extends Transformacion {
+case class Rotacion(grados: Double, override val figuraTransformada: Figura) extends Transformacion {
   override def esNula: Boolean = grados == 0
 
   override def aplicarA(figura: Figura): Figura =
     Rotacion(this.grados, figura)
 
-  override def figuraTransformada: Figura = figura
-
   def combinar(otra: Rotacion): Rotacion =
-    Rotacion((this.grados + otra.grados) % 360, otra.figura)
+    Rotacion((this.grados + otra.grados) % 360, otra.figuraTransformada)
 }
 
-case class Escala(factorX: Double, factorY: Double, figura: Figura) extends Transformacion {
+case class Escala(factorX: Double, factorY: Double, override val figuraTransformada: Figura) extends Transformacion {
   override def esNula: Boolean = factorX == 1 && factorY == 1
 
   override def aplicarA(figura: Figura): Figura =
     Escala(this.factorX, this.factorY, figura)
 
-  override def figuraTransformada: Figura = figura
-
   def combinar(otra: Escala): Escala =
-    Escala(this.factorX * otra.factorX, this.factorY * otra.factorY, otra.figura)
+    Escala(this.factorX * otra.factorX, this.factorY * otra.factorY, otra.figuraTransformada)
 }
 
-case class Traslacion(dX: Int, dY: Int, figura: Figura) extends Transformacion {
+case class Traslacion(dX: Int, dY: Int, override val figuraTransformada: Figura) extends Transformacion {
   override def esNula: Boolean = dX == 0 && dY == 0
 
   override def aplicarA(figura: Figura): Figura =
     Traslacion(this.dX, this.dY, figura)
 
-  override def figuraTransformada: Figura = figura
-
   def combinar(otra: Traslacion): Traslacion =
-    Traslacion(this.dX + otra.dX, this.dY + otra.dY, otra.figura)
+    Traslacion(this.dX + otra.dX, this.dY + otra.dY, otra.figuraTransformada)
 }
 
 object ParserImagenes {
@@ -156,4 +150,3 @@ object ParserImagenes {
 
 // TODO: No forzar `argumentos` para reutilizarlo (por ejemplo en `circulo`)
 // TODO: No repetir validacion de cantidad de argumentos, tratar de parametrizarlo
-// TODO: Convertir `figuraTransformada` de `Transformacion` en val
