@@ -61,16 +61,20 @@ object ParserImagenes {
 
   private def normalizarGrados(grados: Double) = ((grados % 360) + 360) % 360
 
-  private def delimitadoPor[T](parser: Parser[T], principio: Char, fin: Char): Parser[T] = for {
-    _ <- char(principio)
+  private def argumento[T](parser: Parser[T]) = for {
     _ <- espacios
-    t <- parser
+    p <- parser
     _ <- espacios
-    _ <- char(fin)
-  } yield t
+  } yield p
 
-  private def argumentos[T](parser: Parser[T], principio: Char, fin: Char): Parser[List[T]] =
-    delimitadoPor(parser.sepBy(char(',') <~ espacios), principio, fin)
+  private def argumentos[T](tipo: Parser[T], principio: Char, fin: Char): Parser[List[T]] = for {
+    _ <- char(principio)
+    p <- argumento(tipo).sepBy(char(','))
+    _ <- char(fin)
+  } yield p
+
+  private def argumentos[T](tipo: Parser[T], principio: Char, fin: Char, cantidad: Int): Parser[List[T]] =
+    argumentos(tipo, principio, fin).satisfies(_.size == cantidad)
 
   def parsearFigura(entrada: String): Try[Figura] = figura.parse(entrada).map(_._1)
 
@@ -84,69 +88,51 @@ object ParserImagenes {
 
   val triangulo: Parser[Triangulo] = for {
     _ <- string("triangulo")
-    puntos <- argumentos(punto, '[', ']')
-  } yield puntos match {
-    case v1 :: v2 :: v3 :: Nil => Triangulo(v1, v2, v3)
-    case _ => throw new ParserException("Un triángulo necesita 3 puntos")
-  }
+    puntos <- argumentos(punto, '[', ']', 3)
+  } yield Triangulo(puntos.head, puntos(1), puntos(2))
 
   val rectangulo: Parser[Rectangulo] = for {
     _ <- string("rectangulo")
-    puntos <- argumentos(punto, '[', ']')
-  } yield puntos match {
-    case vSupIzq :: vInfDer :: Nil => Rectangulo(vSupIzq, vInfDer)
-    case _ => throw new ParserException("Un rectángulo necesita 2 puntos")
-  }
+    puntos <- argumentos(punto, '[', ']', 2)
+  } yield Rectangulo(puntos.head, puntos(1))
 
   val circulo: Parser[Circulo] = for {
     _ <- string("circulo")
-    args <- argumentos(punto <|> integer.map(Punto(_, 0)), '[', ']')
-  } yield args match {
-    case centro :: radio :: Nil => Circulo(centro, radio.x)
-    case _ => throw new ParserException("Un círculo necesita un centro y un radio")
-  }
+    _ <- char('[')
+    centro <- argumento(punto)
+    _ <- char(',')
+    radio <- argumento(integer)
+    _ <- char(']')
+  } yield Circulo(centro, radio)
 
   val grupo: Parser[Grupo] = for {
     _ <- string("grupo")
     figuras <- argumentos(figura, '(', ')')
   } yield Grupo(figuras)
 
+  private val figuraTransformada = argumentos(figura, '(', ')', 1).map(_.head)
+
   val color: Parser[Color] = for {
     _ <- string("color")
-    valores <- argumentos(rgb, '[', ']')
-    figura <- delimitadoPor(figura, '(', ')')
-  } yield valores match {
-    case r :: g :: b :: Nil => Color(r, g, b, figura)
-    case _ => throw new ParserException("Color necesita 3 valores RGB")
-  }
+    valores <- argumentos(rgb, '[', ']', 3)
+    figura <- figuraTransformada
+  } yield Color(valores.head, valores(1), valores(2), figura)
 
   val escala: Parser[Escala] = for {
     _ <- string("escala")
-    factores <- argumentos(double, '[', ']')
-    figura <- delimitadoPor(figura, '(', ')')
-  } yield factores match {
-    case factorX :: factorY :: Nil => Escala(factorX, factorY, figura)
-    case _ => throw new ParserException("Escala necesita 2 factores")
-  }
+    factores <- argumentos(double, '[', ']', 2)
+    figura <- figuraTransformada
+  } yield Escala(factores.head, factores(1), figura)
 
   val rotacion: Parser[Rotacion] = for {
     _ <- string("rotacion")
-    grados <- argumentos(double, '[', ']')
-    figura <- delimitadoPor(figura, '(', ')')
-  } yield grados match {
-    case grados :: Nil => Rotacion(normalizarGrados(grados), figura)
-    case _ => throw new ParserException("Rotación necesita grados");
-  }
+    grados <- argumentos(double, '[', ']', 1).map(_.head)
+    figura <- figuraTransformada
+  } yield Rotacion(normalizarGrados(grados), figura)
 
   val traslacion: Parser[Traslacion] = for {
     _ <- string("traslacion")
-    desplazamientos <- argumentos(integer, '[', ']')
-    figura <- delimitadoPor(figura, '(', ')')
-  } yield desplazamientos match {
-    case dx :: dy :: Nil => Traslacion(dx, dy, figura)
-    case _ => throw new ParserException("Traslación necesita 2 factores de desplazamiento");
-  }
+    d <- argumentos(integer, '[', ']', 2)
+    figura <- figuraTransformada
+  } yield Traslacion(d.head, d(1), figura)
 }
-
-// TODO: No forzar `argumentos` para reutilizarlo (por ejemplo en `circulo`)
-// TODO: No repetir validacion de cantidad de argumentos, tratar de parametrizarlo
