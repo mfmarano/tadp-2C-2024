@@ -1,15 +1,10 @@
 object SimplificadorAST {
   def simplificar(figura: Figura): Figura = figura match {
-    case c: Color => simplificarColor(c)
     case t: Transformacion => simplificarTransformacion(t)
     case g: Grupo => simplificarGrupo(g)
     case f => f
   }
-
-  private def simplificarColor(color: Color): Figura = color match {
-    case Color(_, _, _, Color(r, g, b, f)) => Color(r, g, b, simplificar(f))
-    case _ => color
-  }
+  
 
   private def simplificarTransformacion(transformacion: Transformacion): Figura = {
     val figuraTransformadaSimplificada = simplificar(transformacion.figuraTransformada)
@@ -19,6 +14,7 @@ object SimplificadorAST {
       case (r1: Rotacion, r2: Rotacion) => r1.combinar(r2)
       case (e1: Escala, e2: Escala) => e1.combinar(e2)
       case (t1: Traslacion, t2: Traslacion) => t1.combinar(t2)
+      case (c1: Color, c2: Color) => c1.combinar(c2)
       case _ => transformacion.aplicarA(figuraTransformadaSimplificada)
     }
   }
@@ -33,9 +29,8 @@ object SimplificadorAST {
 
     transformacionesUniformes match {
       case List() => grupo
-
       case _ =>
-        val transformacion = grupo.figuras.collect { case t: Transformable[_] => t }.head
+        val transformacion = grupo.figuras.collect { case t: Transformacion => t }.head
         transformacion.aplicarA(Grupo(grupo.figuras.map(getFiguraInterna)))
     }
   }
@@ -52,9 +47,11 @@ object SimplificadorAST {
 }
 
 object TransformacionesComunes {
-  def sonTransformacionesUniformes[T <: Transformable[T]](figuras: List[Figura]): Boolean = {
-    val transformaciones = figuras.collect { case t: T => t }
-    
+  def sonTransformacionesUniformes[T <: Transformacion](figuras: List[Figura]): Boolean = {
+    val transformaciones = figuras.head match
+      case t: Transformacion => t.filter(figuras)
+      case _ => List()
+
     if (transformaciones.size != figuras.size || transformaciones.isEmpty) return false
     
     val primerParametro = transformaciones.head.parametros
