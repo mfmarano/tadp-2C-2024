@@ -20,14 +20,11 @@ object SimplificadorAST {
 
   private def simplificarGrupo(grupo: Grupo): Figura = {
     val figurasSimplificadas = grupo.figuras.map(simplificar)
-    detectarYAplicarTransformacionesComunes(Grupo(figurasSimplificadas))
-  }
 
-  private def detectarYAplicarTransformacionesComunes(grupo: Grupo): Figura = {
-    if grupo.tieneTransformacionesComunes then
-      val transformacion = grupo.figuras.collect { case t: Transformacion => t }.head
-      transformacion.aplicarA(Grupo(grupo.figuras.map(_.getFiguraInterna)))
-    else
-      grupo
+    figurasSimplificadas match {
+      case (t: Transformacion) :: figuras if t.esIgualA(figuras) =>
+        t.aplicarA(Grupo(figurasSimplificadas.map(_.getFiguraInterna)))
+      case _ => Grupo(figurasSimplificadas)
+    }
   }
 }

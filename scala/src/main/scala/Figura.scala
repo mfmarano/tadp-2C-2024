@@ -14,43 +14,26 @@ case class Punto(x: Int, y: Int)
 case class Triangulo(v1: Punto, v2: Punto, v3: Punto) extends Figura
 case class Rectangulo(vSupIzq: Punto, vInfDer: Punto) extends Figura
 case class Circulo(centro: Punto, radio: Int) extends Figura
-
-case class Grupo(figuras: List[Figura]) extends Figura {
-  def tieneTransformacionesComunes: Boolean = {
-    val transformaciones = figuras.head match
-      case t: Transformacion => t.filter(figuras)
-      case _ => List()
-
-    if (transformaciones.size != figuras.size || transformaciones.isEmpty) {
-      return false
-    }
-
-    val primerParametro = transformaciones.head.parametros
-    transformaciones.forall(_.parametros == primerParametro)
-  }
-}
+case class Grupo(figuras: List[Figura]) extends Figura
 
 sealed trait Transformacion extends Figura {
   def esNula: Boolean
   def aplicarA(figura: Figura): Figura
-  type Params
-  def parametros: Params
-  def filter(figuras: List[Figura]): List[Transformacion]
+  def esIgualA(figuras: List[Figura]): Boolean = figuras.forall(esIgualA)
+  def esIgualA(otra: Figura): Boolean
 }
 
-case class Color(r: Int, g: Int, b: Int, figura: Figura) extends Transformacion {
+case class Color(red: Int, green: Int, blue: Int, figura: Figura) extends Transformacion {
   override def esNula: Boolean = false
 
   def combinar(otra: Color): Color = otra
 
-  override def aplicarA(figura: Figura): Figura = Color(r, g, b, figura)
-    
-  type Params = (Int, Int, Int)
+  override def aplicarA(figura: Figura): Figura = Color(red, green, blue, figura)
 
-  def parametros: Params = (r, g, b)
-
-  override def filter(figuras: List[Figura]): List[Transformacion] =
-    figuras.collect { case c: Color => c }
+  override def esIgualA(otra: Figura): Boolean = otra match {
+    case Color(r, g, b, _) => red == r && green == g && blue == b
+    case _ => false
+  }
 }
 
 case class Rotacion(grados: Double, figura: Figura) extends Transformacion {
@@ -61,12 +44,10 @@ case class Rotacion(grados: Double, figura: Figura) extends Transformacion {
   def combinar(otra: Rotacion): Rotacion =
     Rotacion((this.grados + otra.grados) % 360, otra.figura)
 
-  type Params = Double
-
-  def parametros: Params = grados
-
-  override def filter(figuras: List[Figura]): List[Transformacion] =
-    figuras.collect { case r: Rotacion => r }
+  override def esIgualA(otra: Figura): Boolean = otra match {
+    case Rotacion(g, _) => grados == g
+    case _ => false
+  }
 }
 
 case class Escala(factorX: Double, factorY: Double, figura: Figura) extends Transformacion {
@@ -77,28 +58,24 @@ case class Escala(factorX: Double, factorY: Double, figura: Figura) extends Tran
   def combinar(otra: Escala): Escala =
     Escala(this.factorX * otra.factorX, this.factorY * otra.factorY, otra.figura)
 
-  type Params = (Double, Double)
-
-  def parametros: Params = (factorX, factorY)
-
-  override def filter(figuras: List[Figura]): List[Transformacion] =
-    figuras.collect { case e: Escala => e }
+  override def esIgualA(otra: Figura): Boolean = otra match {
+    case Escala(fX, fY, _) => factorX == fX && factorY == fY
+    case _ => false
+  }
 }
 
-case class Traslacion(dX: Int, dY: Int, figura: Figura) extends Transformacion {
-  override def esNula: Boolean = dX == 0 && dY == 0
+case class Traslacion(desplazamientoX: Int, desplazamientoY: Int, figura: Figura) extends Transformacion {
+  override def esNula: Boolean = desplazamientoX == 0 && desplazamientoY == 0
 
-  override def aplicarA(figura: Figura): Figura = Traslacion(this.dX, this.dY, figura)
+  override def aplicarA(figura: Figura): Figura = Traslacion(this.desplazamientoX, this.desplazamientoY, figura)
 
   def combinar(otra: Traslacion): Traslacion =
-    Traslacion(this.dX + otra.dX, this.dY + otra.dY, otra.figura)
+    Traslacion(this.desplazamientoX + otra.desplazamientoX, this.desplazamientoY + otra.desplazamientoY, otra.figura)
 
-  type Params = (Int, Int)
-
-  def parametros: Params = (dX, dY)
-
-  override def filter(figuras: List[Figura]): List[Transformacion] =
-    figuras.collect { case t: Traslacion => t }
+  override def esIgualA(otra: Figura): Boolean = otra match {
+    case Traslacion(dX, dY, _) => desplazamientoX == dX && desplazamientoY == dY
+    case _ => false
+  }
 }
 
 object ParserImagenes {
