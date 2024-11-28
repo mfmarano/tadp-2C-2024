@@ -29,52 +29,17 @@ object SimplificadorAST {
   }
 
   private def detectarYAplicarTransformacionesComunes(grupo: Grupo): Figura = {
-    def extraerColor(figura: Figura): Option[(Int, Int, Int)] = figura match {
-      case Color(r, g, b, _) => Some((r, g, b))
-      case _ => None
-    }
+    val transformacionesUniformes = TransformacionesComunes.transformacionesUniformes(grupo.figuras)
 
-    def extraerGrados(figura: Figura): Option[Double] = figura match {
-      case Rotacion(grados, _) => Some(grados)
-      case _ => None
-    }
+    transformacionesUniformes match {
+      case List() => grupo
 
-    def extraerDesplazamiento(figura: Figura): Option[(Int, Int)] = figura match {
-      case Traslacion(dx, dy, _) => Some((dx, dy))
-      case _ => None
+      case _ =>
+        val transformacion = grupo.figuras.collect { case t: Transformable[_] => t }.head
+        transformacion.aplicarA(Grupo(grupo.figuras.map(getFiguraInterna)))
     }
-
-    def extraerEscala(figura: Figura): Option[(Double, Double)] = figura match {
-      case Escala(factorX, factorY, _) => Some((factorX, factorY))
-      case _ => None
-    }
-
-    val rotaciones = grupo.figuras.map(extraerGrados)
-    if (rotaciones.forall(_.isDefined) && rotaciones.map(_.get).distinct.size == 1) {
-      val grados = rotaciones.head.get
-      return Rotacion(grados, Grupo(grupo.figuras.map(x => getFiguraInterna(x))))
-    }
-
-    val desplazamientos = grupo.figuras.map(extraerDesplazamiento)
-    if (desplazamientos.forall(_.isDefined) && desplazamientos.map(_.get).distinct.size == 1) {
-      val (dx, dy) = desplazamientos.head.get
-      return Traslacion(dx, dy, Grupo(grupo.figuras.map(x => getFiguraInterna(x))))
-    }
-
-    val escalas = grupo.figuras.map(extraerEscala)
-    if (escalas.forall(_.isDefined) && escalas.map(_.get).distinct.size == 1) {
-      val (factorX, factorY) = escalas.head.get
-      return Escala(factorX, factorY, Grupo(grupo.figuras.map(x => getFiguraInterna(x))))
-    }
-
-    val colores = grupo.figuras.map(extraerColor)
-    if (colores.forall(_.isDefined) && colores.map(_.get).distinct.size == 1) {
-      val (r, g, b) = colores.head.get
-      return Color(r, g, b, Grupo(grupo.figuras.map(x => getFiguraInterna(x))))
-    }
-
-    grupo
   }
+  
 
   private def getFiguraInterna(figura: Figura): Figura = figura match {
     case Color(_, _, _, f) => f
@@ -83,6 +48,24 @@ object SimplificadorAST {
     case Traslacion(_, _, f) => f
     case f => f
   }
+
 }
 
-// TODO: Revisar `simplificarGrupo`
+object TransformacionesComunes {
+  def sonTransformacionesUniformes[T <: Transformable[T]](figuras: List[Figura]): Boolean = {
+    val transformaciones = figuras.collect { case t: T => t }
+    
+    if (transformaciones.size != figuras.size || transformaciones.isEmpty) return false
+    
+    val primerParametro = transformaciones.head.parametros
+    transformaciones.forall(_.parametros == primerParametro)
+  }
+  
+  def transformacionesUniformes(figuras: List[Figura]): List[String] =
+    List(
+      "Color" -> sonTransformacionesUniformes[Color](figuras),
+      "Rotación" -> sonTransformacionesUniformes[Rotacion](figuras),
+      "Traslación" -> sonTransformacionesUniformes[Traslacion](figuras),
+      "Escala" -> sonTransformacionesUniformes[Escala](figuras)
+    ).collect { case (nombre, true) => nombre }
+}
