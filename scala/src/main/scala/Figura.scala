@@ -6,7 +6,27 @@ case class Punto(x: Int, y: Int)
 case class Triangulo(v1: Punto, v2: Punto, v3: Punto) extends Figura
 case class Rectangulo(vSupIzq: Punto, vInfDer: Punto) extends Figura
 case class Circulo(centro: Punto, radio: Int) extends Figura
-case class Grupo(figuras: List[Figura]) extends Figura
+
+case class Grupo(figuras: List[Figura]) extends Figura {
+  val transformacionesComunes: List[String] =
+    List(
+      "Color" -> sonTransformacionesComunes[Color],
+      "Rotación" -> sonTransformacionesComunes[Rotacion],
+      "Traslación" -> sonTransformacionesComunes[Traslacion],
+      "Escala" -> sonTransformacionesComunes[Escala]
+    ).collect { case (nombre, true) => nombre }
+
+  private def sonTransformacionesComunes[T <: Transformacion]: Boolean = {
+    val transformaciones = figuras.head match
+      case t: Transformacion => t.filter(figuras)
+      case _ => List()
+
+    if (transformaciones.size != figuras.size || transformaciones.isEmpty) return false
+
+    val primerParametro = transformaciones.head.parametros
+    transformaciones.forall(_.parametros == primerParametro)
+  }
+}
 
 
 sealed trait Transformacion extends Figura {

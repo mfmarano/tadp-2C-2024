@@ -5,7 +5,6 @@ object SimplificadorAST {
     case f => f
   }
   
-
   private def simplificarTransformacion(transformacion: Transformacion): Figura = {
     val figuraTransformadaSimplificada = simplificar(transformacion.figuraTransformada)
 
@@ -25,16 +24,13 @@ object SimplificadorAST {
   }
 
   private def detectarYAplicarTransformacionesComunes(grupo: Grupo): Figura = {
-    val transformacionesUniformes = TransformacionesComunes.transformacionesUniformes(grupo.figuras)
-
-    transformacionesUniformes match {
+    grupo.transformacionesComunes match {
       case List() => grupo
       case _ =>
         val transformacion = grupo.figuras.collect { case t: Transformacion => t }.head
         transformacion.aplicarA(Grupo(grupo.figuras.map(getFiguraInterna)))
     }
   }
-  
 
   private def getFiguraInterna(figura: Figura): Figura = figura match {
     case Color(_, _, _, f) => f
@@ -43,26 +39,4 @@ object SimplificadorAST {
     case Traslacion(_, _, f) => f
     case f => f
   }
-
-}
-
-object TransformacionesComunes {
-  def sonTransformacionesUniformes[T <: Transformacion](figuras: List[Figura]): Boolean = {
-    val transformaciones = figuras.head match
-      case t: Transformacion => t.filter(figuras)
-      case _ => List()
-
-    if (transformaciones.size != figuras.size || transformaciones.isEmpty) return false
-    
-    val primerParametro = transformaciones.head.parametros
-    transformaciones.forall(_.parametros == primerParametro)
-  }
-  
-  def transformacionesUniformes(figuras: List[Figura]): List[String] =
-    List(
-      "Color" -> sonTransformacionesUniformes[Color](figuras),
-      "Rotación" -> sonTransformacionesUniformes[Rotacion](figuras),
-      "Traslación" -> sonTransformacionesUniformes[Traslacion](figuras),
-      "Escala" -> sonTransformacionesUniformes[Escala](figuras)
-    ).collect { case (nombre, true) => nombre }
 }
