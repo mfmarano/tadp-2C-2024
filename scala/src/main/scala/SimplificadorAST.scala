@@ -4,7 +4,7 @@ object SimplificadorAST {
     case g: Grupo => simplificarGrupo(g)
     case f => f
   }
-  
+
   private def simplificarTransformacion(transformacion: Transformacion): Figura = {
     val figuraTransformadaSimplificada = simplificar(transformacion.getFiguraInterna)
 
@@ -24,11 +24,10 @@ object SimplificadorAST {
   }
 
   private def detectarYAplicarTransformacionesComunes(grupo: Grupo): Figura = {
-    grupo.transformacionesComunes match {
-      case List() => grupo
-      case _ =>
-        val transformacion = grupo.figuras.collect { case t: Transformacion => t }.head
-        transformacion.aplicarA(Grupo(grupo.figuras.map(_.getFiguraInterna)))
-    }
+    if grupo.tieneTransformacionesComunes then
+      val transformacion = grupo.figuras.collect { case t: Transformacion => t }.head
+      transformacion.aplicarA(Grupo(grupo.figuras.map(_.getFiguraInterna)))
+    else
+      grupo
   }
 }
