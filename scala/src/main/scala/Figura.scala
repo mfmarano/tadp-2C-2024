@@ -1,6 +1,14 @@
 import scala.util.Try
 
-sealed trait Figura
+sealed trait Figura {
+  val getFiguraInterna: Figura = this match {
+    case Color(_, _, _, f) => f
+    case Rotacion(_, f) => f
+    case Escala(_, _, f) => f
+    case Traslacion(_, _, f) => f
+    case f => f
+  }
+}
 
 case class Punto(x: Int, y: Int)
 case class Triangulo(v1: Punto, v2: Punto, v3: Punto) extends Figura
@@ -28,73 +36,71 @@ case class Grupo(figuras: List[Figura]) extends Figura {
   }
 }
 
-
 sealed trait Transformacion extends Figura {
   def esNula: Boolean
-  val figuraTransformada: Figura
   def aplicarA(figura: Figura): Figura
   type Params
   def parametros: Params
   def filter(figuras: List[Figura]): List[Transformacion]
 }
 
-
-case class Color(r: Int, g: Int, b: Int, override val figuraTransformada: Figura) extends Transformacion {
-
+case class Color(r: Int, g: Int, b: Int, figura: Figura) extends Transformacion {
   override def esNula: Boolean = false
-  def combinar(otra: Color): Color =
-    otra
-  override def aplicarA(figura: Figura): Figura = 
-    Color(r,g,b, figura)
+
+  def combinar(otra: Color): Color = otra
+
+  override def aplicarA(figura: Figura): Figura = Color(r, g, b, figura)
     
   type Params = (Int, Int, Int)
+
   def parametros: Params = (r, g, b)
 
   override def filter(figuras: List[Figura]): List[Transformacion] =
     figuras.collect { case c: Color => c }
 }
 
-case class Rotacion(grados: Double, override val figuraTransformada: Figura) extends Transformacion {
+case class Rotacion(grados: Double, figura: Figura) extends Transformacion {
   override def esNula: Boolean = grados == 0
 
-  override def aplicarA(figura: Figura): Figura =
-    Rotacion(this.grados, figura)
+  override def aplicarA(figura: Figura): Figura = Rotacion(this.grados, figura)
 
   def combinar(otra: Rotacion): Rotacion =
-    Rotacion((this.grados + otra.grados) % 360, otra.figuraTransformada)
+    Rotacion((this.grados + otra.grados) % 360, otra.figura)
 
   type Params = Double
+
   def parametros: Params = grados
 
   override def filter(figuras: List[Figura]): List[Transformacion] =
     figuras.collect { case r: Rotacion => r }
 }
 
-case class Escala(factorX: Double, factorY: Double, override val figuraTransformada: Figura) extends Transformacion {
+case class Escala(factorX: Double, factorY: Double, figura: Figura) extends Transformacion {
   override def esNula: Boolean = factorX == 1 && factorY == 1
-  override def aplicarA(figura: Figura): Figura =
-    Escala(this.factorX, this.factorY, figura)
+
+  override def aplicarA(figura: Figura): Figura = Escala(this.factorX, this.factorY, figura)
 
   def combinar(otra: Escala): Escala =
-    Escala(this.factorX * otra.factorX, this.factorY * otra.factorY, otra.figuraTransformada)
+    Escala(this.factorX * otra.factorX, this.factorY * otra.factorY, otra.figura)
 
   type Params = (Double, Double)
+
   def parametros: Params = (factorX, factorY)
 
   override def filter(figuras: List[Figura]): List[Transformacion] =
     figuras.collect { case e: Escala => e }
 }
 
-case class Traslacion(dX: Int, dY: Int, override val figuraTransformada: Figura) extends Transformacion {
+case class Traslacion(dX: Int, dY: Int, figura: Figura) extends Transformacion {
   override def esNula: Boolean = dX == 0 && dY == 0
 
-  override def aplicarA(figura: Figura): Figura =
-    Traslacion(this.dX, this.dY, figura)
+  override def aplicarA(figura: Figura): Figura = Traslacion(this.dX, this.dY, figura)
 
   def combinar(otra: Traslacion): Traslacion =
-    Traslacion(this.dX + otra.dX, this.dY + otra.dY, otra.figuraTransformada)
+    Traslacion(this.dX + otra.dX, this.dY + otra.dY, otra.figura)
 
   type Params = (Int, Int)
+
   def parametros: Params = (dX, dY)
 
   override def filter(figuras: List[Figura]): List[Transformacion] =

@@ -6,7 +6,7 @@ object SimplificadorAST {
   }
   
   private def simplificarTransformacion(transformacion: Transformacion): Figura = {
-    val figuraTransformadaSimplificada = simplificar(transformacion.figuraTransformada)
+    val figuraTransformadaSimplificada = simplificar(transformacion.getFiguraInterna)
 
     (transformacion, figuraTransformadaSimplificada) match {
       case (t, _) if t.esNula => figuraTransformadaSimplificada
@@ -28,15 +28,7 @@ object SimplificadorAST {
       case List() => grupo
       case _ =>
         val transformacion = grupo.figuras.collect { case t: Transformacion => t }.head
-        transformacion.aplicarA(Grupo(grupo.figuras.map(getFiguraInterna)))
+        transformacion.aplicarA(Grupo(grupo.figuras.map(_.getFiguraInterna)))
     }
-  }
-
-  private def getFiguraInterna(figura: Figura): Figura = figura match {
-    case Color(_, _, _, f) => f
-    case Rotacion(_, f) => f
-    case Escala(_, _, f) => f
-    case Traslacion(_, _, f) => f
-    case f => f
   }
 }
