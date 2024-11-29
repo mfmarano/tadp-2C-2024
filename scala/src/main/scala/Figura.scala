@@ -1,54 +1,85 @@
 import scala.util.Try
 
-sealed trait Figura
-
 case class Punto(x: Int, y: Int)
+
+sealed trait Figura {
+  val getFiguraInterna: Figura = this match {
+    case Color(_, _, _, f) => f
+    case Rotacion(_, f) => f
+    case Escala(_, _, f) => f
+    case Traslacion(_, _, f) => f
+    case f => f
+  }
+}
+
 case class Triangulo(v1: Punto, v2: Punto, v3: Punto) extends Figura
 case class Rectangulo(vSupIzq: Punto, vInfDer: Punto) extends Figura
 case class Circulo(centro: Punto, radio: Int) extends Figura
 case class Grupo(figuras: List[Figura]) extends Figura
-case class Color(r: Int, g: Int, b: Int, figura: Figura) extends Figura
 
 sealed trait Transformacion extends Figura {
   def esNula: Boolean
+
   def aplicarA(figura: Figura): Figura
-  def figuraTransformada: Figura
+
+  def esIgualA(figuras: List[Figura]): Boolean = figuras.forall(esIgualA)
+
+  def esIgualA(otra: Figura): Boolean
+}
+
+case class Color(red: Int, green: Int, blue: Int, figura: Figura) extends Transformacion {
+  override def esNula: Boolean = false
+
+  override def aplicarA(figura: Figura): Figura = Color(red, green, blue, figura)
+
+  override def esIgualA(otra: Figura): Boolean = otra match {
+    case Color(r, g, b, _) => red == r && green == g && blue == b
+    case _ => false
+  }
+
+  def combinar(otra: Color): Color = otra
 }
 
 case class Rotacion(grados: Double, figura: Figura) extends Transformacion {
   override def esNula: Boolean = grados == 0
 
-  override def aplicarA(figura: Figura): Figura =
-    Rotacion(this.grados, figura)
+  override def aplicarA(figura: Figura): Figura = Rotacion(grados, figura)
 
-  override def figuraTransformada: Figura = figura
+  override def esIgualA(otra: Figura): Boolean = otra match {
+    case Rotacion(g, _) => grados == g
+    case _ => false
+  }
 
   def combinar(otra: Rotacion): Rotacion =
-    Rotacion((this.grados + otra.grados) % 360, otra.figura)
+    Rotacion((grados + otra.grados) % 360, otra.figura)
 }
 
 case class Escala(factorX: Double, factorY: Double, figura: Figura) extends Transformacion {
   override def esNula: Boolean = factorX == 1 && factorY == 1
 
-  override def aplicarA(figura: Figura): Figura =
-    Escala(this.factorX, this.factorY, figura)
+  override def aplicarA(figura: Figura): Figura = Escala(factorX, factorY, figura)
 
-  override def figuraTransformada: Figura = figura
+  override def esIgualA(otra: Figura): Boolean = otra match {
+    case Escala(fX, fY, _) => factorX == fX && factorY == fY
+    case _ => false
+  }
 
   def combinar(otra: Escala): Escala =
-    Escala(this.factorX * otra.factorX, this.factorY * otra.factorY, otra.figura)
+    Escala(factorX * otra.factorX, factorY * otra.factorY, otra.figura)
 }
 
-case class Traslacion(dX: Int, dY: Int, figura: Figura) extends Transformacion {
-  override def esNula: Boolean = dX == 0 && dY == 0
+case class Traslacion(desplazamientoX: Int, desplazamientoY: Int, figura: Figura) extends Transformacion {
+  override def esNula: Boolean = desplazamientoX == 0 && desplazamientoY == 0
 
-  override def aplicarA(figura: Figura): Figura =
-    Traslacion(this.dX, this.dY, figura)
+  override def aplicarA(figura: Figura): Figura = Traslacion(desplazamientoX, desplazamientoY, figura)
 
-  override def figuraTransformada: Figura = figura
+  override def esIgualA(otra: Figura): Boolean = otra match {
+    case Traslacion(dX, dY, _) => desplazamientoX == dX && desplazamientoY == dY
+    case _ => false
+  }
 
   def combinar(otra: Traslacion): Traslacion =
-    Traslacion(this.dX + otra.dX, this.dY + otra.dY, otra.figura)
+    Traslacion(desplazamientoX + otra.desplazamientoX, desplazamientoY + otra.desplazamientoY, otra.figura)
 }
 
 object ParserImagenes {
@@ -67,16 +98,20 @@ object ParserImagenes {
 
   private def normalizarGrados(grados: Double) = ((grados % 360) + 360) % 360
 
-  private def delimitadoPor[T](parser: Parser[T], principio: Char, fin: Char): Parser[T] = for {
-    _ <- char(principio)
+  private def argumento[T](parser: Parser[T]) = for {
     _ <- espacios
-    t <- parser
+    p <- parser
     _ <- espacios
-    _ <- char(fin)
-  } yield t
+  } yield p
 
-  private def argumentos[T](parser: Parser[T], principio: Char, fin: Char): Parser[List[T]] =
-    delimitadoPor(parser.sepBy(char(',') <~ espacios), principio, fin)
+  private def argumentos[T](tipo: Parser[T], principio: Char, fin: Char): Parser[List[T]] = for {
+    _ <- char(principio)
+    p <- argumento(tipo).sepBy(char(','))
+    _ <- char(fin)
+  } yield p
+
+  private def argumentos[T](tipo: Parser[T], principio: Char, fin: Char, cantidad: Int): Parser[List[T]] =
+    argumentos(tipo, principio, fin).satisfies(_.size == cantidad)
 
   def parsearFigura(entrada: String): Try[Figura] = figura.parse(entrada).map(_._1)
 
@@ -90,66 +125,51 @@ object ParserImagenes {
 
   val triangulo: Parser[Triangulo] = for {
     _ <- string("triangulo")
-    puntos <- argumentos(punto, '[', ']')
-  } yield puntos match {
-    case v1 :: v2 :: v3 :: Nil => Triangulo(v1, v2, v3)
-    case _ => throw new ParserException("Un triángulo necesita 3 puntos")
-  }
+    puntos <- argumentos(punto, '[', ']', 3)
+  } yield Triangulo(puntos.head, puntos(1), puntos(2))
 
   val rectangulo: Parser[Rectangulo] = for {
     _ <- string("rectangulo")
-    puntos <- argumentos(punto, '[', ']')
-  } yield puntos match {
-    case vSupIzq :: vInfDer :: Nil => Rectangulo(vSupIzq, vInfDer)
-    case _ => throw new ParserException("Un rectángulo necesita 2 puntos")
-  }
+    puntos <- argumentos(punto, '[', ']', 2)
+  } yield Rectangulo(puntos.head, puntos(1))
 
   val circulo: Parser[Circulo] = for {
     _ <- string("circulo")
-    args <- argumentos(punto <|> integer.map(Punto(_, 0)), '[', ']')
-  } yield args match {
-    case centro :: radio :: Nil => Circulo(centro, radio.x)
-    case _ => throw new ParserException("Un círculo necesita un centro y un radio")
-  }
+    _ <- char('[')
+    centro <- argumento(punto)
+    _ <- char(',')
+    radio <- argumento(integer)
+    _ <- char(']')
+  } yield Circulo(centro, radio)
 
   val grupo: Parser[Grupo] = for {
     _ <- string("grupo")
     figuras <- argumentos(figura, '(', ')')
   } yield Grupo(figuras)
 
+  private val figuraTransformada = argumentos(figura, '(', ')', 1).map(_.head)
+
   val color: Parser[Color] = for {
     _ <- string("color")
-    valores <- argumentos(rgb, '[', ']')
-    figura <- delimitadoPor(figura, '(', ')')
-  } yield valores match {
-    case r :: g :: b :: Nil => Color(r, g, b, figura)
-    case _ => throw new ParserException("Color necesita 3 valores RGB")
-  }
+    valores <- argumentos(rgb, '[', ']', 3)
+    figura <- figuraTransformada
+  } yield Color(valores.head, valores(1), valores(2), figura)
 
   val escala: Parser[Escala] = for {
     _ <- string("escala")
-    factores <- argumentos(double, '[', ']')
-    figura <- delimitadoPor(figura, '(', ')')
-  } yield factores match {
-    case factorX :: factorY :: Nil => Escala(factorX, factorY, figura)
-    case _ => throw new ParserException("Escala necesita 2 factores")
-  }
+    factores <- argumentos(double, '[', ']', 2)
+    figura <- figuraTransformada
+  } yield Escala(factores.head, factores(1), figura)
 
   val rotacion: Parser[Rotacion] = for {
     _ <- string("rotacion")
-    grados <- argumentos(double, '[', ']')
-    figura <- delimitadoPor(figura, '(', ')')
-  } yield grados match {
-    case grados :: Nil => Rotacion(normalizarGrados(grados), figura)
-    case _ => throw new ParserException("Rotación necesita grados");
-  }
+    grados <- argumentos(double, '[', ']', 1).map(_.head)
+    figura <- figuraTransformada
+  } yield Rotacion(normalizarGrados(grados), figura)
 
   val traslacion: Parser[Traslacion] = for {
     _ <- string("traslacion")
-    desplazamientos <- argumentos(integer, '[', ']')
-    figura <- delimitadoPor(figura, '(', ')')
-  } yield desplazamientos match {
-    case dx :: dy :: Nil => Traslacion(dx, dy, figura)
-    case _ => throw new ParserException("Traslación necesita 2 factores de desplazamiento");
-  }
+    d <- argumentos(integer, '[', ']', 2)
+    figura <- figuraTransformada
+  } yield Traslacion(d.head, d(1), figura)
 }

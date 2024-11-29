@@ -460,6 +460,43 @@ class ProjectSpec extends AnyFreeSpec {
           Circulo(Punto(50, 50), 25)
         )))
       }
+
+      "no debería extraer transformaciones cuando no son comunes" in {
+        val grupo = Grupo(List(
+          Color(100, 200, 200, Rectangulo(Punto(0, 0), Punto(100, 100))),
+          Color(200, 200, 200, Circulo(Punto(50, 50), 25))
+        ))
+        val simplificada = simplificar(grupo)
+
+        simplificada shouldBe grupo
+
+
+        val grupoEscala = Grupo(List(
+          Escala(200, 100, Rectangulo(Punto(0, 0), Punto(100, 100))),
+          Escala(200, 200, Circulo(Punto(50, 50), 25))
+        ))
+        val simplificadaEscala = simplificar(grupoEscala)
+
+        simplificadaEscala shouldBe grupoEscala
+
+
+        val grupoRotacion = Grupo(List(
+          Rotacion(90, Rectangulo(Punto(0, 0), Punto(100, 100))),
+          Rotacion(45, Circulo(Punto(50, 50), 25))
+        ))
+        val simplificadaRotacion = simplificar(grupoRotacion)
+
+        simplificadaRotacion shouldBe grupoRotacion
+
+
+        val grupoTraslacion = Grupo(List(
+          Traslacion(100, 300, Rectangulo(Punto(0, 0), Punto(100, 100))),
+          Escala(100, 300, Circulo(Punto(50, 50), 25))
+        ))
+        val simplificadaTraslacion = simplificar(grupoTraslacion)
+
+        simplificadaTraslacion shouldBe grupoTraslacion
+      }
     }
   }
 }
